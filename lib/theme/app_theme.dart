@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+abstract class AppFonts {
+  static const family = 'ElMessiri';
+}
 
 abstract class AppColors {
   static const primary = Color(0xFF1A73E8);
@@ -80,7 +83,11 @@ abstract class AppButtonStyles {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.pill),
     ),
-    textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    textStyle: const TextStyle(
+      fontFamily: AppFonts.family,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    ),
   );
 
   static ButtonStyle primaryDisabled = ElevatedButton.styleFrom(
@@ -90,20 +97,39 @@ abstract class AppButtonStyles {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.pill),
     ),
-    textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    textStyle: const TextStyle(
+      fontFamily: AppFonts.family,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    ),
   );
 }
 
 ThemeData buildAppTheme(bool isArabic) {
-  final baseTextTheme = ThemeData.dark().textTheme;
+  const buttonLabelFont = TextStyle(fontFamily: AppFonts.family);
   return ThemeData(
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
     ),
-    textTheme: isArabic
-        ? GoogleFonts.cairoTextTheme(baseTextTheme)
-        : GoogleFonts.poppinsTextTheme(baseTextTheme),
+    fontFamily: AppFonts.family,
     useMaterial3: true,
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(textStyle: buttonLabelFont),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(textStyle: buttonLabelFont),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(textStyle: buttonLabelFont),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(textStyle: buttonLabelFont),
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        textStyle: WidgetStateProperty.all(buttonLabelFont),
+      ),
+    ),
   );
 }

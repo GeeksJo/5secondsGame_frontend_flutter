@@ -1,19 +1,49 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+
 import 'providers/locale_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/app_navigator.dart';
+import 'services/game_kit_bootstrap.dart';
 import 'theme/app_theme.dart';
 
-class YallaApp extends StatelessWidget {
+class YallaApp extends StatefulWidget {
   const YallaApp({super.key});
+
+  @override
+  State<YallaApp> createState() => _YallaAppState();
+}
+
+class _YallaAppState extends State<YallaApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(refreshGameKitAfterResume());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final localeProvider = context.watch<LocaleProvider>();
 
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'Yalla',
       debugShowCheckedModeBanner: false,
       locale: localeProvider.locale,

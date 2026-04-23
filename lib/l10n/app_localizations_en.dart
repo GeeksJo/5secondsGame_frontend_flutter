@@ -33,6 +33,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sound => 'Sound';
 
   @override
+  String get answerTime => 'Answer time';
+
+  @override
+  String get answerTimeDescription =>
+      'How long each player has to answer before time runs out.';
+
+  @override
   String get on => 'On';
 
   @override
@@ -84,6 +91,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get getReady => 'Get Ready!';
 
   @override
+  String get stageStartsIn => 'Round starts in';
+
+  @override
+  String get stageStartsFootnote =>
+      'The winner is whoever scores the most points';
+
+  @override
   String get done => 'Done!';
 
   @override
@@ -106,9 +120,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coins => 'Coins';
-
-  @override
-  String get coinsEarned => 'Coins earned';
 
   @override
   String get rent => 'Rent';
@@ -160,7 +171,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get howToPlayStep3 =>
-      'You\'ll get a question and have 5 seconds to answer';
+      'You\'ll get a question — answer before the countdown ends';
 
   @override
   String get howToPlayStep4 =>
@@ -181,4 +192,146 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appSubtitle => '5 Seconds';
+
+  @override
+  String get storeAndSupport => 'Store & support';
+
+  @override
+  String get restorePurchases => 'Restore purchases';
+
+  @override
+  String get removeAds => 'Remove ads';
+
+  @override
+  String get adFreeMode => 'Ad-free mode is on.';
+
+  @override
+  String get moreGames => 'More games';
+
+  @override
+  String get crossPromoEmpty => 'No other games to show yet. Check back later.';
+
+  @override
+  String get rateApp => 'Rate app';
+
+  @override
+  String get supportSmall => 'Support — small';
+
+  @override
+  String get supportMedium => 'Support — medium';
+
+  @override
+  String get supportLarge => 'Support — large';
+
+  @override
+  String get purchaseThanks => 'Thank you for your support!';
+
+  @override
+  String get purchasesRestored => 'Purchases restored.';
+
+  @override
+  String get purchaseFailed => 'Purchase could not complete.';
+
+  @override
+  String get storeUnavailable => 'Store is not available on this device.';
+
+  @override
+  String get rewardedUnavailable => 'Rewarded ad is not available right now.';
+
+  @override
+  String get dialogOk => 'OK';
+
+  @override
+  String get dialogCancel => 'Cancel';
+
+  @override
+  String get dialogConfirm => 'Confirm';
+
+  @override
+  String get errorTitle => 'Something went wrong';
+
+  @override
+  String get confirmRemoveAdsTitle => 'Remove ads?';
+
+  @override
+  String confirmRemoveAdsMessage(String price) {
+    return 'Remove all ads for $price?';
+  }
+
+  @override
+  String get sectionAppInfo => 'App';
+
+  @override
+  String get sectionPremium => 'Premium';
+
+  @override
+  String get sectionSupport => 'Support';
+
+  @override
+  String get sectionContact => 'Contact';
+
+  @override
+  String get appInfoLine => 'Yalla — 5 Seconds party game';
+
+  @override
+  String get removeAdsSubtitle =>
+      'Enjoy the game without banner or interstitial ads.';
+
+  @override
+  String get restorePurchasesSubtitle =>
+      'Restore previous purchases on this device.';
+
+  @override
+  String get donateTitle => 'Donate';
+
+  @override
+  String get donateSubtitle => 'Support development with a one-time tip.';
+
+  @override
+  String get donationPickTitle => 'Choose an amount';
+
+  @override
+  String get purchaseSuccessRemoveAdsTitle => 'Purchase successful';
+
+  @override
+  String get purchaseSuccessRemoveAdsMessage =>
+      'Thank you! Ads are removed on this device.';
+
+  @override
+  String get donationSuccessTitle => 'Thank you!';
+
+  @override
+  String donationSuccessBody(String total) {
+    return 'Your support helps us improve Yalla. Total tips: $total';
+  }
+
+  @override
+  String get shareApp => 'Share app';
+
+  @override
+  String get shareAppMessage => 'Play Yalla — 5 Seconds with me!';
+
+  @override
+  String get websiteTitle => 'Website';
+
+  @override
+  String get websiteSubtitle => 'Open the official site';
+
+  @override
+  String get contactEmailTitle => 'Email support';
+
+  @override
+  String get contactEmailSubtitle => 'Send feedback or questions';
+
+  @override
+  String get activatedLabel => 'Active';
+
+  @override
+  String get restoreInProgress => 'Restoring purchases…';
+
+  @override
+  String get purchaseCanceled => 'Purchase was cancelled.';
+
+  @override
+  String get loading => 'Loading…';
 }

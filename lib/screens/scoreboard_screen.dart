@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:game_kit/game_kit.dart';
+
 import '../providers/game_provider.dart';
 import '../services/ad_service.dart';
+import '../services/game_kit_bootstrap.dart';
 import '../theme/app_theme.dart';
 import '../widgets/player_score_tile.dart';
 import '../widgets/responsive_layout.dart';
@@ -24,7 +27,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() => _adShowing = true);
-      await context.read<AdService>().showInterstitial();
+      final ads = context.read<AdService>();
+      await GameKit.notifications.onFirstDailyCompletion();
+      await GameKitAdBridge.presentAfterLevel(ads, failed: false);
+      GameKit.haptics.levelComplete();
       if (mounted) setState(() => _adShowing = false);
     });
   }
@@ -45,87 +51,119 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           decoration: AppDecorations.gradientBg,
           child: SafeArea(
             child: ResponsiveLayout(
-              maxWidth: 600,
+              maxWidth: 560,
               child: Column(
                 children: [
-                  const SizedBox(height: 24),
-                  Icon(Icons.emoji_events, color: AppColors.coin,
-                      size: isTablet ? 80 : 64),
-                  const SizedBox(height: 8),
+                  SizedBox(height: isTablet ? 28 : 20),
+                  Container(
+                    padding: EdgeInsets.all(isTablet ? 18 : 14),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.cardFill,
+                      border: Border.all(
+                        color: AppColors.cardBorder.withValues(alpha: 0.65),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.emoji_events_rounded,
+                      color: AppColors.coin,
+                      size: isTablet ? 44 : 36,
+                    ),
+                  ),
+                  SizedBox(height: isTablet ? 20 : 16),
                   Text(
                     l10n.scoreboard,
                     style: TextStyle(
+                      fontFamily: AppFonts.family,
                       color: AppColors.textPrimary,
-                      fontSize: isTablet ? 34.0 : 28.0,
-                      fontWeight: FontWeight.bold,
+                      fontSize: isTablet ? 32.0 : 26.0,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.monetization_on,
-                          color: AppColors.coin, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${l10n.coinsEarned}: ${game.coinsEarnedThisGame}',
-                        style: TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: isTablet ? 16.0 : 14.0,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.score,
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      color: AppColors.textMuted,
+                      fontSize: isTablet ? 15.0 : 13.0,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: isTablet ? 22 : 18),
                   Expanded(
-                    child: ListView.builder(
-                      padding: AppSpacing.screenH,
+                    child: ListView.separated(
+                      padding: AppSpacing.screenH.copyWith(bottom: 8),
                       itemCount: ranked.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         return PlayerScoreTile(
                           player: ranked[index],
                           rank: index + 1,
                           isWinner: index == 0,
+                          isTablet: isTablet,
                         );
                       },
                     ),
                   ),
                   Padding(
-                    padding: AppSpacing.screenPadding,
+                    padding: AppSpacing.screenPadding.copyWith(top: 8),
                     child: Column(
                       children: [
                         SizedBox(
                           width: double.infinity,
                           height: AppSpacing.buttonHeight,
                           child: ElevatedButton(
-                            onPressed: _adShowing ? null : () {
-                              game.resetGame();
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const CategorySelectionScreen()),
-                                (route) => route.isFirst,
-                              );
-                            },
+                            onPressed: _adShowing
+                                ? null
+                                : () {
+                                    game.resetGame();
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CategorySelectionScreen(),
+                                      ),
+                                      (route) => route.isFirst,
+                                    );
+                                  },
                             style: AppButtonStyles.primary,
                             child: Text(l10n.playAgain),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         TextButton(
-                          onPressed: () {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const HomeScreen()),
-                              (route) => false,
-                            );
-                          },
-                          child: Text(l10n.home,
-                              style: TextStyle(
-                                  color: AppColors.textMuted,
-                                  fontSize: isTablet ? 18.0 : 16.0)),
+                          onPressed: _adShowing
+                              ? null
+                              : () async {
+                                  final ads = context.read<AdService>();
+                                  final nav = Navigator.of(context);
+                                  setState(() => _adShowing = true);
+                                  try {
+                                    await GameKitAdBridge.presentOnAbandonHome(
+                                      ads,
+                                    );
+                                  } finally {
+                                    if (!context.mounted) return;
+                                    nav.pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (_) => const HomeScreen(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  }
+                                },
+                          child: Text(
+                            l10n.home,
+                            style: TextStyle(
+                              fontFamily: AppFonts.family,
+                              color: AppColors.textSecondary,
+                              fontSize: isTablet ? 17.0 : 15.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ],
                     ),

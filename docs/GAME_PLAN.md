@@ -110,7 +110,6 @@ lib/
     red_button.dart
     category_card.dart
     locked_category_sheet.dart
-    coin_display.dart
     player_score_tile.dart
   data/
     questions.dart

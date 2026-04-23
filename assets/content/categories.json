@@ -1,0 +1,92 @@
+[
+  {
+    "key": "general",
+    "nameEn": "General",
+    "nameAr": "عام",
+    "icon": "category",
+    "color": "#4CAF50",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/general.png"
+  },
+  {
+    "key": "food",
+    "nameEn": "Food",
+    "nameAr": "طعام",
+    "icon": "restaurant",
+    "color": "#FFA500",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/food.png"
+  },
+  {
+    "key": "sports",
+    "nameEn": "Sports",
+    "nameAr": "رياضة",
+    "icon": "sports_soccer",
+    "color": "#008000",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/sports.png"
+  },
+  {
+    "key": "movies",
+    "nameEn": "Movies",
+    "nameAr": "أفلام",
+    "icon": "movie",
+    "color": "#FF0000",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/movies.png"
+  },
+  {
+    "key": "countriesandcapitals",
+    "nameEn": "Countries & Capitals",
+    "nameAr": "دول وعواصم",
+    "icon": "public",
+    "color": "#0000FF",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/countriesandcapitals.png"
+  },
+  {
+    "key": "animals",
+    "nameEn": "Animals",
+    "nameAr": "حيوانات",
+    "icon": "pets",
+    "color": "#FFC107",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/animals.png"
+  },
+  {
+    "key": "music",
+    "nameEn": "Music",
+    "nameAr": "موسيقى",
+    "icon": "music_note",
+    "color": "#800080",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/music.png"
+  },
+  {
+    "key": "history",
+    "nameEn": "History",
+    "nameAr": "تاريخ",
+    "icon": "history_edu",
+    "color": "#A52A2A",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/history.png"
+  },
+  {
+    "key": "names",
+    "nameEn": "Names",
+    "nameAr": "أسماء",
+    "icon": "badge",
+    "color": "#9C27B0",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/names.png"
+  },
+  {
+    "key": "brands",
+    "nameEn": "Brands",
+    "nameAr": "ماركات",
+    "icon": "store",
+    "color": "#FFC0CB",
+    "lockedByDefault": false,
+    "imagePath": "assets/images/categories/brands.png"
+  }
+]

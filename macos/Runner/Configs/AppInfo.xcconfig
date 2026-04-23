@@ -8,7 +8,7 @@
 PRODUCT_NAME = yalla
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.yalla.yalla
+PRODUCT_BUNDLE_IDENTIFIER = com.majoon.yalla
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.yalla. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.majoon. All rights reserved.

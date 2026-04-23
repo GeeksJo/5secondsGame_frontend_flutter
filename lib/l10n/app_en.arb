@@ -8,6 +8,8 @@
   "arabic": "العربية",
   "english": "English",
   "sound": "Sound",
+  "answerTime": "Answer time",
+  "answerTimeDescription": "How long each player has to answer before time runs out.",
   "on": "On",
   "off": "Off",
   "oneVsOne": "1 vs 1",
@@ -25,6 +27,8 @@
   "howManyRounds": "How many rounds?",
   "chooseCategories": "Choose Categories",
   "getReady": "Get Ready!",
+  "stageStartsIn": "Round starts in",
+  "stageStartsFootnote": "The winner is whoever scores the most points",
   "done": "Done!",
   "timeUp": "Time's Up!",
   "passTo": "Pass the phone to",
@@ -33,7 +37,6 @@
   "playAgain": "Play Again",
   "home": "Home",
   "coins": "Coins",
-  "coinsEarned": "Coins earned",
   "rent": "Rent",
   "buy": "Buy",
   "rentFor2Hours": "Rent for 2 hours",
@@ -50,11 +53,70 @@
   "winner": "Winner",
   "howToPlayStep1": "Choose a game mode and enter player names",
   "howToPlayStep2": "Pick categories and number of rounds",
-  "howToPlayStep3": "You'll get a question and have 5 seconds to answer",
+  "howToPlayStep3": "You'll get a question — answer before the countdown ends",
   "howToPlayStep4": "Answer out loud and press the red button if you got it",
   "howToPlayStep5": "If you can't answer, the timer runs out automatically",
   "howToPlayStep6": "The player with the most points wins!",
   "paused": "Paused",
   "resume": "Resume",
-  "appSubtitle": "5 Seconds"
+  "appSubtitle": "5 Seconds",
+  "storeAndSupport": "Store & support",
+  "restorePurchases": "Restore purchases",
+  "removeAds": "Remove ads",
+  "adFreeMode": "Ad-free mode is on.",
+  "moreGames": "More games",
+  "crossPromoEmpty": "No other games to show yet. Check back later.",
+  "rateApp": "Rate app",
+  "supportSmall": "Support — small",
+  "supportMedium": "Support — medium",
+  "supportLarge": "Support — large",
+  "purchaseThanks": "Thank you for your support!",
+  "purchasesRestored": "Purchases restored.",
+  "purchaseFailed": "Purchase could not complete.",
+  "storeUnavailable": "Store is not available on this device.",
+  "rewardedUnavailable": "Rewarded ad is not available right now.",
+  "dialogOk": "OK",
+  "dialogCancel": "Cancel",
+  "dialogConfirm": "Confirm",
+  "errorTitle": "Something went wrong",
+  "confirmRemoveAdsTitle": "Remove ads?",
+  "confirmRemoveAdsMessage": "Remove all ads for {price}?",
+  "@confirmRemoveAdsMessage": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionAppInfo": "App",
+  "sectionPremium": "Premium",
+  "sectionSupport": "Support",
+  "sectionContact": "Contact",
+  "appInfoLine": "Yalla — 5 Seconds party game",
+  "removeAdsSubtitle": "Enjoy the game without banner or interstitial ads.",
+  "restorePurchasesSubtitle": "Restore previous purchases on this device.",
+  "donateTitle": "Donate",
+  "donateSubtitle": "Support development with a one-time tip.",
+  "donationPickTitle": "Choose an amount",
+  "purchaseSuccessRemoveAdsTitle": "Purchase successful",
+  "purchaseSuccessRemoveAdsMessage": "Thank you! Ads are removed on this device.",
+  "donationSuccessTitle": "Thank you!",
+  "donationSuccessBody": "Your support helps us improve Yalla. Total tips: {total}",
+  "@donationSuccessBody": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "shareApp": "Share app",
+  "shareAppMessage": "Play Yalla — 5 Seconds with me!",
+  "websiteTitle": "Website",
+  "websiteSubtitle": "Open the official site",
+  "contactEmailTitle": "Email support",
+  "contactEmailSubtitle": "Send feedback or questions",
+  "activatedLabel": "Active",
+  "restoreInProgress": "Restoring purchases…",
+  "purchaseCanceled": "Purchase was cancelled.",
+  "loading": "Loading…"
 }

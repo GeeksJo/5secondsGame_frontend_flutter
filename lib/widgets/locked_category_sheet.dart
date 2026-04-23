@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:game_kit/game_kit.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
@@ -89,6 +90,16 @@ class LockedCategorySheet extends StatelessWidget {
             enabled: coinProvider.isAdReady,
             isAd: true,
             onTap: () async {
+              if (!GameKit.ads.canShowRewarded(RewardedReason.hint)) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.rewardedUnavailable),
+                    ),
+                  );
+                }
+                return;
+              }
               await coinProvider.watchAdForCoins();
             },
           ),
@@ -127,6 +138,7 @@ class LockedCategorySheet extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
+                  fontFamily: AppFonts.family,
                   color: enabled ? AppColors.textPrimary : AppColors.textHint,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
@@ -147,6 +159,7 @@ class LockedCategorySheet extends StatelessWidget {
                 Text(
                   cost,
                   style: TextStyle(
+                    fontFamily: AppFonts.family,
                     color: enabled ? AppColors.textPrimary : AppColors.textHint,
                     fontWeight: FontWeight.bold,
                     fontSize: 15,

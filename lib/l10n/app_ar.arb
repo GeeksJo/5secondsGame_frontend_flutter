@@ -8,6 +8,8 @@
   "arabic": "العربية",
   "english": "English",
   "sound": "الصوت",
+  "answerTime": "وقت الإجابة",
+  "answerTimeDescription": "مدة الوقت لكل لاعب للإجابة قبل انتهاء العداد.",
   "on": "مفعّل",
   "off": "مطفأ",
   "oneVsOne": "١ ضد ١",
@@ -25,6 +27,8 @@
   "howManyRounds": "كم جولة؟",
   "chooseCategories": "اختر الفئات",
   "getReady": "استعد!",
+  "stageStartsIn": "تبدأ المرحلة خلال",
+  "stageStartsFootnote": "الفائز من يحرز نقاط أكثر",
   "done": "تم!",
   "timeUp": "انتهى الوقت!",
   "passTo": "مرر الهاتف إلى",
@@ -33,7 +37,6 @@
   "playAgain": "العب مرة ثانية",
   "home": "الرئيسية",
   "coins": "عملات",
-  "coinsEarned": "عملات مكتسبة",
   "rent": "استئجار",
   "buy": "شراء",
   "rentFor2Hours": "استئجار لمدة ساعتين",
@@ -50,11 +53,70 @@
   "winner": "الفائز",
   "howToPlayStep1": "اختر وضع اللعب وأدخل أسماء اللاعبين",
   "howToPlayStep2": "اختر الفئات وعدد الجولات",
-  "howToPlayStep3": "ستظهر لك سؤال ولديك ٥ ثوانٍ للإجابة",
+  "howToPlayStep3": "سيظهر لك سؤال — أجب قبل انتهاء العداد",
   "howToPlayStep4": "أجب بصوت عالٍ واضغط الزر الأحمر إذا أجبت",
   "howToPlayStep5": "إذا لم تستطع الإجابة، سينتهي الوقت تلقائياً",
   "howToPlayStep6": "أكثر لاعب يجمع نقاط يفوز!",
   "paused": "إيقاف مؤقت",
   "resume": "متابعة",
-  "appSubtitle": "٥ ثوانٍ"
+  "appSubtitle": "٥ ثوانٍ",
+  "storeAndSupport": "المتجر والدعم",
+  "restorePurchases": "استعادة المشتريات",
+  "removeAds": "إزالة الإعلانات",
+  "adFreeMode": "وضع بدون إعلانات مفعّل.",
+  "moreGames": "ألعاب أخرى",
+  "crossPromoEmpty": "لا توجد ألعاب أخرى حالياً. عد لاحقاً.",
+  "rateApp": "قيّم التطبيق",
+  "supportSmall": "دعم — صغير",
+  "supportMedium": "دعم — متوسط",
+  "supportLarge": "دعم — كبير",
+  "purchaseThanks": "شكراً لدعمك!",
+  "purchasesRestored": "تمت استعادة المشتريات.",
+  "purchaseFailed": "تعذر إتمام الشراء.",
+  "storeUnavailable": "المتجر غير متاح على هذا الجهاز.",
+  "rewardedUnavailable": "إعلان المكافأة غير متاح حالياً.",
+  "dialogOk": "موافق",
+  "dialogCancel": "إلغاء",
+  "dialogConfirm": "تأكيد",
+  "errorTitle": "حدث خطأ",
+  "confirmRemoveAdsTitle": "إزالة الإعلانات؟",
+  "confirmRemoveAdsMessage": "إزالة كل الإعلانات مقابل {price}؟",
+  "@confirmRemoveAdsMessage": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "sectionAppInfo": "التطبيق",
+  "sectionPremium": "مميز",
+  "sectionSupport": "الدعم",
+  "sectionContact": "تواصل",
+  "appInfoLine": "يلا — لعبة ٥ ثوانٍ للحفلات",
+  "removeAdsSubtitle": "استمتع باللعب بدون إعلانات بانر أو بين الجولات.",
+  "restorePurchasesSubtitle": "استعد مشترياتك السابقة على هذا الجهاز.",
+  "donateTitle": "تبرع",
+  "donateSubtitle": "ادعم التطوير بتبرع لمرة واحدة.",
+  "donationPickTitle": "اختر المبلغ",
+  "purchaseSuccessRemoveAdsTitle": "تم الشراء بنجاح",
+  "purchaseSuccessRemoveAdsMessage": "شكراً! تمت إزالة الإعلانات على هذا الجهاز.",
+  "donationSuccessTitle": "شكراً لدعمك!",
+  "donationSuccessBody": "تبرعك يساعدنا على تطوير يلا. إجمالي التبرعات: {total}",
+  "@donationSuccessBody": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "shareApp": "مشاركة التطبيق",
+  "shareAppMessage": "العب يلا — ٥ ثوانٍ معي!",
+  "websiteTitle": "الموقع",
+  "websiteSubtitle": "افتح الموقع الرسمي",
+  "contactEmailTitle": "البريد للدعم",
+  "contactEmailSubtitle": "أرسل ملاحظاتك أو أسئلتك",
+  "activatedLabel": "مفعّل",
+  "restoreInProgress": "جاري استعادة المشتريات…",
+  "purchaseCanceled": "تم إلغاء الشراء.",
+  "loading": "جاري التحميل…"
 }

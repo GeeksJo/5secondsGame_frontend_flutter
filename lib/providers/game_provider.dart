@@ -11,8 +11,8 @@ class GameProvider extends ChangeNotifier {
   int _totalRounds = 3;
   int _currentRound = 1;
   int _currentPlayerIndex = 0;
+  bool _isFlipped = false;
   Question? _currentQuestion;
-  int _coinsEarnedThisGame = 0;
 
   final QuestionBank _questionBank;
 
@@ -25,12 +25,13 @@ class GameProvider extends ChangeNotifier {
   int get currentRound => _currentRound;
   int get currentPlayerIndex => _currentPlayerIndex;
   Player get currentPlayer => _players[_currentPlayerIndex];
+  bool get isFlipped => _isFlipped;
   Question? get currentQuestion => _currentQuestion;
-  int get coinsEarnedThisGame => _coinsEarnedThisGame;
   bool get isGameOver => _currentRound > _totalRounds;
 
   void setMode(GameMode mode) {
     _mode = mode;
+    _isFlipped = false;
     notifyListeners();
   }
 
@@ -52,7 +53,7 @@ class GameProvider extends ChangeNotifier {
   void startGame() {
     _currentRound = 1;
     _currentPlayerIndex = 0;
-    _coinsEarnedThisGame = 0;
+    _isFlipped = false;
     for (final p in _players) {
       p.reset();
     }
@@ -67,7 +68,6 @@ class GameProvider extends ChangeNotifier {
 
   bool answerCorrect() {
     currentPlayer.addPoint();
-    _coinsEarnedThisGame++;
     final gameOver = _advanceTurn();
     notifyListeners();
     return gameOver;
@@ -88,6 +88,9 @@ class GameProvider extends ChangeNotifier {
     if (_currentRound > _totalRounds) {
       return true;
     }
+    if (_mode == GameMode.oneVsOne && _players.length == 2) {
+      _isFlipped = !_isFlipped;
+    }
     _nextQuestion();
     return false;
   }
@@ -107,7 +110,7 @@ class GameProvider extends ChangeNotifier {
   void resetGame() {
     _currentRound = 1;
     _currentPlayerIndex = 0;
-    _coinsEarnedThisGame = 0;
+    _isFlipped = false;
     for (final p in _players) {
       p.reset();
     }

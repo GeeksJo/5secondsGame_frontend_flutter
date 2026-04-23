@@ -4,8 +4,12 @@ import 'app.dart';
 import 'data/questions.dart';
 import 'providers/coin_provider.dart';
 import 'providers/game_provider.dart';
+import 'providers/game_settings_provider.dart';
 import 'providers/locale_provider.dart';
 import 'services/ad_service.dart';
+import 'services/game_kit_bootstrap.dart';
+import 'services/premium_service.dart';
+import 'services/purchase_service.dart';
 import 'services/storage_service.dart';
 
 void main() async {
@@ -16,6 +20,7 @@ void main() async {
 
   final adService = AdService();
   await adService.init();
+  await initializeGameKit(adService);
 
   final questionBank = QuestionBank();
   await questionBank.load();
@@ -24,7 +29,19 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<AdService>.value(value: adService),
+        Provider<PremiumService>(
+          create: (_) => PremiumService(storage),
+        ),
+        Provider<PurchaseService>(
+          create: (_) {
+            final p = PurchaseService();
+            p.initialize();
+            return p;
+          },
+          dispose: (_, p) => p.dispose(),
+        ),
         ChangeNotifierProvider(create: (_) => LocaleProvider(storage)),
+        ChangeNotifierProvider(create: (_) => GameSettingsProvider(storage)),
         ChangeNotifierProvider(create: (_) => CoinProvider(storage, adService)),
         ChangeNotifierProvider(create: (_) => GameProvider(questionBank)),
       ],

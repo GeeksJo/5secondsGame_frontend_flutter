@@ -146,6 +146,18 @@ abstract class AppLocalizations {
   /// **'الصوت'**
   String get sound;
 
+  /// No description provided for @answerTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت الإجابة'**
+  String get answerTime;
+
+  /// No description provided for @answerTimeDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدة الوقت لكل لاعب للإجابة قبل انتهاء العداد.'**
+  String get answerTimeDescription;
+
   /// No description provided for @on.
   ///
   /// In ar, this message translates to:
@@ -248,6 +260,18 @@ abstract class AppLocalizations {
   /// **'استعد!'**
   String get getReady;
 
+  /// No description provided for @stageStartsIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبدأ المرحلة خلال'**
+  String get stageStartsIn;
+
+  /// No description provided for @stageStartsFootnote.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفائز من يحرز نقاط أكثر'**
+  String get stageStartsFootnote;
+
   /// No description provided for @done.
   ///
   /// In ar, this message translates to:
@@ -295,12 +319,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'عملات'**
   String get coins;
-
-  /// No description provided for @coinsEarned.
-  ///
-  /// In ar, this message translates to:
-  /// **'عملات مكتسبة'**
-  String get coinsEarned;
 
   /// No description provided for @rent.
   ///
@@ -401,7 +419,7 @@ abstract class AppLocalizations {
   /// No description provided for @howToPlayStep3.
   ///
   /// In ar, this message translates to:
-  /// **'ستظهر لك سؤال ولديك ٥ ثوانٍ للإجابة'**
+  /// **'سيظهر لك سؤال — أجب قبل انتهاء العداد'**
   String get howToPlayStep3;
 
   /// No description provided for @howToPlayStep4.
@@ -439,6 +457,276 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'٥ ثوانٍ'**
   String get appSubtitle;
+
+  /// No description provided for @storeAndSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتجر والدعم'**
+  String get storeAndSupport;
+
+  /// No description provided for @restorePurchases.
+  ///
+  /// In ar, this message translates to:
+  /// **'استعادة المشتريات'**
+  String get restorePurchases;
+
+  /// No description provided for @removeAds.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة الإعلانات'**
+  String get removeAds;
+
+  /// No description provided for @adFreeMode.
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع بدون إعلانات مفعّل.'**
+  String get adFreeMode;
+
+  /// No description provided for @moreGames.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألعاب أخرى'**
+  String get moreGames;
+
+  /// No description provided for @crossPromoEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد ألعاب أخرى حالياً. عد لاحقاً.'**
+  String get crossPromoEmpty;
+
+  /// No description provided for @rateApp.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيّم التطبيق'**
+  String get rateApp;
+
+  /// No description provided for @supportSmall.
+  ///
+  /// In ar, this message translates to:
+  /// **'دعم — صغير'**
+  String get supportSmall;
+
+  /// No description provided for @supportMedium.
+  ///
+  /// In ar, this message translates to:
+  /// **'دعم — متوسط'**
+  String get supportMedium;
+
+  /// No description provided for @supportLarge.
+  ///
+  /// In ar, this message translates to:
+  /// **'دعم — كبير'**
+  String get supportLarge;
+
+  /// No description provided for @purchaseThanks.
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً لدعمك!'**
+  String get purchaseThanks;
+
+  /// No description provided for @purchasesRestored.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت استعادة المشتريات.'**
+  String get purchasesRestored;
+
+  /// No description provided for @purchaseFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذر إتمام الشراء.'**
+  String get purchaseFailed;
+
+  /// No description provided for @storeUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتجر غير متاح على هذا الجهاز.'**
+  String get storeUnavailable;
+
+  /// No description provided for @rewardedUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعلان المكافأة غير متاح حالياً.'**
+  String get rewardedUnavailable;
+
+  /// No description provided for @dialogOk.
+  ///
+  /// In ar, this message translates to:
+  /// **'موافق'**
+  String get dialogOk;
+
+  /// No description provided for @dialogCancel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء'**
+  String get dialogCancel;
+
+  /// No description provided for @dialogConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد'**
+  String get dialogConfirm;
+
+  /// No description provided for @errorTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدث خطأ'**
+  String get errorTitle;
+
+  /// No description provided for @confirmRemoveAdsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة الإعلانات؟'**
+  String get confirmRemoveAdsTitle;
+
+  /// No description provided for @confirmRemoveAdsMessage.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة كل الإعلانات مقابل {price}؟'**
+  String confirmRemoveAdsMessage(String price);
+
+  /// No description provided for @sectionAppInfo.
+  ///
+  /// In ar, this message translates to:
+  /// **'التطبيق'**
+  String get sectionAppInfo;
+
+  /// No description provided for @sectionPremium.
+  ///
+  /// In ar, this message translates to:
+  /// **'مميز'**
+  String get sectionPremium;
+
+  /// No description provided for @sectionSupport.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعم'**
+  String get sectionSupport;
+
+  /// No description provided for @sectionContact.
+  ///
+  /// In ar, this message translates to:
+  /// **'تواصل'**
+  String get sectionContact;
+
+  /// No description provided for @appInfoLine.
+  ///
+  /// In ar, this message translates to:
+  /// **'يلا — لعبة ٥ ثوانٍ للحفلات'**
+  String get appInfoLine;
+
+  /// No description provided for @removeAdsSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'استمتع باللعب بدون إعلانات بانر أو بين الجولات.'**
+  String get removeAdsSubtitle;
+
+  /// No description provided for @restorePurchasesSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'استعد مشترياتك السابقة على هذا الجهاز.'**
+  String get restorePurchasesSubtitle;
+
+  /// No description provided for @donateTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبرع'**
+  String get donateTitle;
+
+  /// No description provided for @donateSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادعم التطوير بتبرع لمرة واحدة.'**
+  String get donateSubtitle;
+
+  /// No description provided for @donationPickTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر المبلغ'**
+  String get donationPickTitle;
+
+  /// No description provided for @purchaseSuccessRemoveAdsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الشراء بنجاح'**
+  String get purchaseSuccessRemoveAdsTitle;
+
+  /// No description provided for @purchaseSuccessRemoveAdsMessage.
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً! تمت إزالة الإعلانات على هذا الجهاز.'**
+  String get purchaseSuccessRemoveAdsMessage;
+
+  /// No description provided for @donationSuccessTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً لدعمك!'**
+  String get donationSuccessTitle;
+
+  /// No description provided for @donationSuccessBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'تبرعك يساعدنا على تطوير يلا. إجمالي التبرعات: {total}'**
+  String donationSuccessBody(String total);
+
+  /// No description provided for @shareApp.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشاركة التطبيق'**
+  String get shareApp;
+
+  /// No description provided for @shareAppMessage.
+  ///
+  /// In ar, this message translates to:
+  /// **'العب يلا — ٥ ثوانٍ معي!'**
+  String get shareAppMessage;
+
+  /// No description provided for @websiteTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع'**
+  String get websiteTitle;
+
+  /// No description provided for @websiteSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح الموقع الرسمي'**
+  String get websiteSubtitle;
+
+  /// No description provided for @contactEmailTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'البريد للدعم'**
+  String get contactEmailTitle;
+
+  /// No description provided for @contactEmailSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسل ملاحظاتك أو أسئلتك'**
+  String get contactEmailSubtitle;
+
+  /// No description provided for @activatedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفعّل'**
+  String get activatedLabel;
+
+  /// No description provided for @restoreInProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري استعادة المشتريات…'**
+  String get restoreInProgress;
+
+  /// No description provided for @purchaseCanceled.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إلغاء الشراء.'**
+  String get purchaseCanceled;
+
+  /// No description provided for @loading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري التحميل…'**
+  String get loading;
 }
 
 class _AppLocalizationsDelegate

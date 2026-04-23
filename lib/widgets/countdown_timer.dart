@@ -4,29 +4,42 @@ import '../theme/app_theme.dart';
 class CountdownTimer extends StatelessWidget {
   final double progress;
   final int secondsLeft;
+  final bool isIntro;
+  final double diameter;
 
   const CountdownTimer({
     super.key,
     required this.progress,
     required this.secondsLeft,
+    this.isIntro = false,
+    this.diameter = 120,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = secondsLeft <= 2 ? AppColors.danger : AppColors.textPrimary;
+    final Color color;
+    if (isIntro) {
+      color = secondsLeft <= 1 ? AppColors.danger : AppColors.coin;
+    } else {
+      color = secondsLeft <= 2 ? AppColors.danger : AppColors.textPrimary;
+    }
+    final fontSize = isIntro ? diameter * 0.4 : diameter * 0.36;
+    final stroke = isIntro ? 8.0 : 7.0;
+    final ring = diameter * 0.92;
 
     return SizedBox(
-      width: 120,
-      height: 120,
+      width: diameter,
+      height: diameter,
       child: Stack(
         alignment: Alignment.center,
         children: [
           SizedBox(
-            width: 120,
-            height: 120,
+            width: ring,
+            height: ring,
             child: CircularProgressIndicator(
-              value: progress,
-              strokeWidth: 8,
+              value: progress.clamp(0.0, 1.0),
+              strokeWidth: stroke,
+              strokeCap: StrokeCap.round,
               backgroundColor: AppColors.cardBorder,
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
@@ -34,9 +47,20 @@ class CountdownTimer extends StatelessWidget {
           Text(
             '$secondsLeft',
             style: TextStyle(
+              fontFamily: AppFonts.family,
               color: color,
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
+              fontSize: fontSize.clamp(32, 52),
+              fontWeight: FontWeight.w800,
+              height: 1,
+              shadows: isIntro
+                  ? [
+                      Shadow(
+                        color: color.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
           ),
         ],

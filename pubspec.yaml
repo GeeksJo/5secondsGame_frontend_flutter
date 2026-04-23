@@ -1,10 +1,10 @@
 name: yalla
 description: "يلا — 5 Seconds Party Game"
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.11.0
 
 dependencies:
   flutter:
@@ -13,11 +13,18 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   provider: ^6.1.5+1
-  google_fonts: ^8.0.2
   audioplayers: ^6.6.0
   shared_preferences: ^2.5.5
   google_mobile_ads: ^7.0.0
   intl: ^0.20.2
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.4
+  # Private repo: HTTPS needs Git credential (macOS Keychain, `gh auth`, CI secret, etc.).
+  # Do not put a PAT in this file. For SSH instead, use git@github.com:GeeksJo/gameKit_package_flutter.git
+  game_kit:
+    git:
+      url: https://github.com/GeeksJo/gameKit_package_flutter.git
+      ref: development
 
 dev_dependencies:
   flutter_test:
@@ -28,7 +35,18 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
-    - assets/questions/
+    - assets/content/
     - assets/sounds/
     - assets/images/
     - assets/images/categories/
+  fonts:
+    - family: ElMessiri
+      fonts:
+        - asset: assets/fonts/El_Messiri/ElMessiri-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/El_Messiri/ElMessiri-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/El_Messiri/ElMessiri-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/El_Messiri/ElMessiri-Bold.ttf
+          weight: 700

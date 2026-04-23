@@ -6,6 +6,8 @@ class StorageService {
   static const _rentedPrefix = 'rented_';
   static const _localeKey = 'locale';
   static const _soundKey = 'sound_enabled';
+  static const _questionTimerKey = 'question_timer_seconds';
+  static const _donationTotalKey = 'donation_total_amount';
 
   late final SharedPreferences _prefs;
 
@@ -45,4 +47,25 @@ class StorageService {
 
   Future<void> setSoundEnabled(bool enabled) =>
       _prefs.setBool(_soundKey, enabled);
+
+  int getQuestionTimerSeconds() {
+    const defaultSeconds = 5;
+    const minSeconds = 3;
+    const maxSeconds = 60;
+    final v = _prefs.getInt(_questionTimerKey);
+    if (v == null) return defaultSeconds;
+    return v.clamp(minSeconds, maxSeconds);
+  }
+
+  Future<void> setQuestionTimerSeconds(int seconds) =>
+      _prefs.setInt(_questionTimerKey, seconds);
+
+  double getDonationTotalAmount() => _prefs.getDouble(_donationTotalKey) ?? 0;
+
+  Future<void> addDonationAmount(double amount) async {
+    final next = getDonationTotalAmount() + amount;
+    await _prefs.setDouble(_donationTotalKey, next);
+  }
+
+  Future<void> clearDonationTotal() => _prefs.remove(_donationTotalKey);
 }

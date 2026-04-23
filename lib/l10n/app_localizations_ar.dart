@@ -33,6 +33,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sound => 'الصوت';
 
   @override
+  String get answerTime => 'وقت الإجابة';
+
+  @override
+  String get answerTimeDescription =>
+      'مدة الوقت لكل لاعب للإجابة قبل انتهاء العداد.';
+
+  @override
   String get on => 'مفعّل';
 
   @override
@@ -84,6 +91,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get getReady => 'استعد!';
 
   @override
+  String get stageStartsIn => 'تبدأ المرحلة خلال';
+
+  @override
+  String get stageStartsFootnote => 'الفائز من يحرز نقاط أكثر';
+
+  @override
   String get done => 'تم!';
 
   @override
@@ -106,9 +119,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get coins => 'عملات';
-
-  @override
-  String get coinsEarned => 'عملات مكتسبة';
 
   @override
   String get rent => 'استئجار';
@@ -159,7 +169,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get howToPlayStep2 => 'اختر الفئات وعدد الجولات';
 
   @override
-  String get howToPlayStep3 => 'ستظهر لك سؤال ولديك ٥ ثوانٍ للإجابة';
+  String get howToPlayStep3 => 'سيظهر لك سؤال — أجب قبل انتهاء العداد';
 
   @override
   String get howToPlayStep4 => 'أجب بصوت عالٍ واضغط الزر الأحمر إذا أجبت';
@@ -178,4 +188,146 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get appSubtitle => '٥ ثوانٍ';
+
+  @override
+  String get storeAndSupport => 'المتجر والدعم';
+
+  @override
+  String get restorePurchases => 'استعادة المشتريات';
+
+  @override
+  String get removeAds => 'إزالة الإعلانات';
+
+  @override
+  String get adFreeMode => 'وضع بدون إعلانات مفعّل.';
+
+  @override
+  String get moreGames => 'ألعاب أخرى';
+
+  @override
+  String get crossPromoEmpty => 'لا توجد ألعاب أخرى حالياً. عد لاحقاً.';
+
+  @override
+  String get rateApp => 'قيّم التطبيق';
+
+  @override
+  String get supportSmall => 'دعم — صغير';
+
+  @override
+  String get supportMedium => 'دعم — متوسط';
+
+  @override
+  String get supportLarge => 'دعم — كبير';
+
+  @override
+  String get purchaseThanks => 'شكراً لدعمك!';
+
+  @override
+  String get purchasesRestored => 'تمت استعادة المشتريات.';
+
+  @override
+  String get purchaseFailed => 'تعذر إتمام الشراء.';
+
+  @override
+  String get storeUnavailable => 'المتجر غير متاح على هذا الجهاز.';
+
+  @override
+  String get rewardedUnavailable => 'إعلان المكافأة غير متاح حالياً.';
+
+  @override
+  String get dialogOk => 'موافق';
+
+  @override
+  String get dialogCancel => 'إلغاء';
+
+  @override
+  String get dialogConfirm => 'تأكيد';
+
+  @override
+  String get errorTitle => 'حدث خطأ';
+
+  @override
+  String get confirmRemoveAdsTitle => 'إزالة الإعلانات؟';
+
+  @override
+  String confirmRemoveAdsMessage(String price) {
+    return 'إزالة كل الإعلانات مقابل $price؟';
+  }
+
+  @override
+  String get sectionAppInfo => 'التطبيق';
+
+  @override
+  String get sectionPremium => 'مميز';
+
+  @override
+  String get sectionSupport => 'الدعم';
+
+  @override
+  String get sectionContact => 'تواصل';
+
+  @override
+  String get appInfoLine => 'يلا — لعبة ٥ ثوانٍ للحفلات';
+
+  @override
+  String get removeAdsSubtitle =>
+      'استمتع باللعب بدون إعلانات بانر أو بين الجولات.';
+
+  @override
+  String get restorePurchasesSubtitle =>
+      'استعد مشترياتك السابقة على هذا الجهاز.';
+
+  @override
+  String get donateTitle => 'تبرع';
+
+  @override
+  String get donateSubtitle => 'ادعم التطوير بتبرع لمرة واحدة.';
+
+  @override
+  String get donationPickTitle => 'اختر المبلغ';
+
+  @override
+  String get purchaseSuccessRemoveAdsTitle => 'تم الشراء بنجاح';
+
+  @override
+  String get purchaseSuccessRemoveAdsMessage =>
+      'شكراً! تمت إزالة الإعلانات على هذا الجهاز.';
+
+  @override
+  String get donationSuccessTitle => 'شكراً لدعمك!';
+
+  @override
+  String donationSuccessBody(String total) {
+    return 'تبرعك يساعدنا على تطوير يلا. إجمالي التبرعات: $total';
+  }
+
+  @override
+  String get shareApp => 'مشاركة التطبيق';
+
+  @override
+  String get shareAppMessage => 'العب يلا — ٥ ثوانٍ معي!';
+
+  @override
+  String get websiteTitle => 'الموقع';
+
+  @override
+  String get websiteSubtitle => 'افتح الموقع الرسمي';
+
+  @override
+  String get contactEmailTitle => 'البريد للدعم';
+
+  @override
+  String get contactEmailSubtitle => 'أرسل ملاحظاتك أو أسئلتك';
+
+  @override
+  String get activatedLabel => 'مفعّل';
+
+  @override
+  String get restoreInProgress => 'جاري استعادة المشتريات…';
+
+  @override
+  String get purchaseCanceled => 'تم إلغاء الشراء.';
+
+  @override
+  String get loading => 'جاري التحميل…';
 }

@@ -9,24 +9,66 @@ class QuestionBank {
   final _random = Random();
 
   Future<void> load() async {
-    final jsonStr = await rootBundle.loadString('assets/questions/questions.json');
-    final data = json.decode(jsonStr) as Map<String, dynamic>;
-    final list = data['questions'] as List;
-    _allQuestions = list.map((q) => Question.fromJson(q)).toList();
+    const files = <String>[
+      'assets/content/general.json',
+      'assets/content/food.json',
+      'assets/content/sports.json',
+      'assets/content/movies.json',
+      'assets/content/countriesandcapitals.json',
+      'assets/content/animals.json',
+      'assets/content/music.json',
+      'assets/content/history.json',
+      'assets/content/names.json',
+      'assets/content/brands.json',
+    ];
+
+    final all = <Question>[];
+    for (final path in files) {
+      final jsonStr = await rootBundle.loadString(path);
+      final data = json.decode(jsonStr);
+      if (data is! Map<String, dynamic>) continue;
+      final category = (data['category'] as String?) ?? '';
+      final list = data['questions'];
+      if (list is! List) continue;
+      for (final raw in list) {
+        if (raw is! Map) continue;
+        final m = raw.cast<String, dynamic>();
+        // Some files omit `category` per question; enforce it from the file header.
+        m.putIfAbsent('category', () => category);
+        all.add(Question.fromJson(m));
+      }
+    }
+    _allQuestions = all;
   }
 
   Question? getQuestion(List<String> categoryKeys) {
-    final available = _allQuestions
-        .where((q) =>
-            categoryKeys.contains(q.category) && !_usedQuestions.contains(q))
+    if (_allQuestions.isEmpty) return null;
+
+    List<Question> matchingUnused() => _allQuestions
+        .where(
+          (q) =>
+              categoryKeys.contains(q.category) &&
+              !_usedQuestions.contains(q),
+        )
         .toList();
 
-    if (available.isEmpty) {
+    List<Question> anyUnused() => _allQuestions
+        .where((q) => !_usedQuestions.contains(q))
+        .toList();
+
+    var pool = matchingUnused();
+    if (pool.isEmpty && _usedQuestions.isNotEmpty) {
       _usedQuestions.clear();
-      return getQuestion(categoryKeys);
+      pool = matchingUnused();
+    }
+    if (pool.isEmpty) {
+      pool = anyUnused();
+    }
+    if (pool.isEmpty) {
+      return null;
     }
 
-    final question = available[_random.nextInt(available.length)];
+    final question = pool[_random.nextInt(pool.length)];
     _usedQuestions.add(question);
     return question;
   }

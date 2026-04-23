@@ -20,95 +20,131 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = isLocked ? Colors.grey : category.color;
+    final accent = category.color;
+    final borderColor = isSelected
+        ? accent
+        : AppColors.cardBorder.withValues(alpha: isLocked ? 0.35 : 0.65);
+    final titleColor = isLocked
+        ? AppColors.textSecondary
+        : (isSelected ? accent : AppColors.textPrimary);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: AppColors.cardFillDark,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(
-            color: isSelected ? category.color : Colors.grey.shade700,
-            width: isSelected ? 3 : 1,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: isLocked ? 0.10 : 0.16),
+                Colors.white.withValues(alpha: isLocked ? 0.04 : 0.07),
+              ],
+            ),
+            border: Border.all(color: borderColor, width: isSelected ? 2.5 : 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+              if (isSelected)
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.22),
+                  blurRadius: 14,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 2),
+                ),
+            ],
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: category.color.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : null,
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: Padding(
-                padding: AppSpacing.cardPadding,
+          child: Stack(
+            children: [
+              Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildVisual(accentColor),
-                    const SizedBox(height: 12),
+                    _buildVisual(accent),
+                    const SizedBox(height: 10),
                     Text(
                       category.name(locale),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: accentColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontFamily: AppFonts.family,
+                        color: titleColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
                       ),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-            ),
-            if (isLocked)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
+              if (isLocked)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      border: Border.all(
+                        color: AppColors.cardBorder.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.lock_rounded,
+                      color: AppColors.coin,
+                      size: 16,
+                    ),
                   ),
-                  child: const Icon(Icons.lock, color: AppColors.coin, size: 18),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildVisual(Color accentColor) {
+  Widget _buildVisual(Color accent) {
+    final well = Container(
+      width: 115,
+      height: 115,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 0.08),
+        border: Border.all(
+          color: accent.withValues(alpha: isLocked ? 0.22 : 0.35),
+        ),
+      ),
+      child: _visualChild(accent),
+    );
+
+    if (isLocked) {
+      return Opacity(opacity: 0.55, child: well);
+    }
+    return well;
+  }
+
+  Widget _visualChild(Color accent) {
     if (category.imagePath != null) {
-      return ColorFiltered(
-        colorFilter: isLocked
-            ? const ColorFilter.matrix(<double>[
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0,      0,      0,      1, 0,
-              ])
-            : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+      return Padding(
+        padding: const EdgeInsets.all(10),
         child: Image.asset(
           category.imagePath!,
-          width: 90,
-          height: 90,
+          width: 72,
+          height: 72,
           fit: BoxFit.contain,
         ),
       );
     }
 
-    return Icon(
-      category.icon,
-      color: accentColor,
-      size: 44,
-    );
+    return Icon(category.icon, color: accent.withValues(alpha: 0.95), size: 40);
   }
 }

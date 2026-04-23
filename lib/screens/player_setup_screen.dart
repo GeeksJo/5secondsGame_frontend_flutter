@@ -87,12 +87,17 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                               controller: _controllers[index],
                               onChanged: (_) => setState(() {}),
                               decoration: InputDecoration(
-                                hintText: '${l10n.enterPlayerName} ${index + 1}',
-                                hintStyle: const TextStyle(color: AppColors.textHint),
+                                hintText:
+                                    '${l10n.enterPlayerName} ${index + 1}',
+                                hintStyle: const TextStyle(
+                                  color: AppColors.textHint,
+                                ),
                                 filled: true,
                                 fillColor: AppColors.cardFill,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppRadius.md),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.md,
+                                  ),
                                   borderSide: BorderSide.none,
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
@@ -100,13 +105,17 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                                   vertical: 14,
                                 ),
                               ),
-                              style: const TextStyle(color: AppColors.textPrimary),
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
                           if (isFFA && _controllers.length > 2)
                             IconButton(
-                              icon: const Icon(Icons.remove_circle_outline,
-                                  color: AppColors.danger),
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                color: AppColors.danger,
+                              ),
                               onPressed: () => _removePlayer(index),
                             ),
                         ],
@@ -123,7 +132,10 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                     icon: const Icon(Icons.add, color: AppColors.textSecondary),
                     label: Text(
                       l10n.addPlayer,
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        fontFamily: AppFonts.family,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ),
@@ -142,7 +154,8 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const CategorySelectionScreen()),
+                                builder: (_) => const CategorySelectionScreen(),
+                              ),
                             );
                           }
                         : null,
