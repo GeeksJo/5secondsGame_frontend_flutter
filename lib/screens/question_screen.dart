@@ -17,6 +17,7 @@ import '../services/game_kit_products.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer.dart';
 import '../widgets/app_cross_promo.dart';
+import '../widgets/game_kit_banner_slot.dart';
 import '../widgets/red_button.dart';
 import '../widgets/responsive_layout.dart';
 import '../widgets/settings/settings_dialogs.dart';
@@ -484,13 +485,13 @@ class _QuestionScreenState extends State<QuestionScreen>
           ),
         ),
         const SizedBox(height: 10),
-        // ValueListenableBuilder<bool>(
-        //   valueListenable: GameKit.ads.bannersEnabled,
-        //   builder: (context, enabled, _) {
-        //     if (!enabled) return const SizedBox.shrink();
-        //     return const GameKitBannerSlot();
-        //   },
-        // ),
+        ValueListenableBuilder<bool>(
+          valueListenable: GameKit.ads.bannersEnabled,
+          builder: (context, enabled, _) {
+            if (!enabled) return const SizedBox.shrink();
+            return const GameKitBannerSlot();
+          },
+        ),
         const SizedBox(height: 8),
       ],
     );
