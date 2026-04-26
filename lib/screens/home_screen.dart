@@ -106,17 +106,6 @@ class HomeScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          l10n.appSubtitle,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isTablet ? 18.0 : 14.5,
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: isArabic ? 0.0 : 2.6,
-                          ),
-                        ),
 
                         Image.asset(
                           'assets/images/yalla.png',

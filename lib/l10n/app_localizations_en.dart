@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Yalla';
+  String get appName => 'Yalla! - 5 seconds';
 
   @override
   String get play => 'Play';
@@ -209,6 +209,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreGames => 'More games';
 
   @override
+  String get moreGamesSubtitle => 'Try a new game from our list.';
+
+  @override
+  String get crossPromoOpen => 'Open';
+
+  @override
   String get crossPromoEmpty => 'No other games to show yet. Check back later.';
 
   @override
@@ -251,12 +257,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorTitle => 'Something went wrong';
 
   @override
-  String get confirmRemoveAdsTitle => 'Remove ads?';
+  String get confirmRemoveAdsTitle => 'Go ad-free?';
 
   @override
   String confirmRemoveAdsMessage(String price) {
-    return 'Remove all ads for $price?';
+    return 'One-time purchase ($price) removes banner and interstitial ads on this device.\n\nRestore purchases anytime from Settings if you reinstall or change devices.';
   }
+
+  @override
+  String get confirmRemoveAdsCta => 'Continue';
+
+  @override
+  String get removeAdsBenefit1 => 'No banner ads';
+
+  @override
+  String get removeAdsBenefit2 => 'No ads between rounds';
 
   @override
   String get sectionAppInfo => 'App';
@@ -271,7 +286,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionContact => 'Contact';
 
   @override
-  String get appInfoLine => 'Yalla — 5 Seconds party game';
+  String get appInfoLine => 'Yalla! - 5 seconds — party game';
 
   @override
   String get removeAdsSubtitle =>
@@ -302,14 +317,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String donationSuccessBody(String total) {
-    return 'Your support helps us improve Yalla. Total tips: $total';
+    return 'Your support helps us improve Yalla! - 5 seconds. Total tips: $total';
   }
 
   @override
   String get shareApp => 'Share app';
 
   @override
-  String get shareAppMessage => 'Play Yalla — 5 Seconds with me!';
+  String get shareAppMessage => 'Play Yalla! - 5 seconds with me!';
 
   @override
   String get websiteTitle => 'Website';

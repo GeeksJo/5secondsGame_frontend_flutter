@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:game_kit/game_kit.dart';
 import '../services/storage_service.dart';
-import '../services/ad_service.dart';
 
 class CoinProvider extends ChangeNotifier {
   final StorageService _storage;
-  final AdService _adService;
   late int _coins;
   late List<String> _purchased;
 
@@ -13,7 +12,7 @@ class CoinProvider extends ChangeNotifier {
   static const int adReward = 20;
   static const Duration rentDuration = Duration(hours: 2);
 
-  CoinProvider(this._storage, this._adService) {
+  CoinProvider(this._storage) {
     _coins = _storage.getCoins();
     _purchased = _storage.getPurchasedCategories();
   }
@@ -53,12 +52,13 @@ class CoinProvider extends ChangeNotifier {
   }
 
   Future<bool> watchAdForCoins() async {
-    final rewarded = await _adService.showRewardedAd();
+    await GameKit.ads.loadRewarded();
+    final rewarded = await GameKit.ads.showRewarded();
     if (rewarded) {
       await addCoins(adReward);
     }
     return rewarded;
   }
 
-  bool get isAdReady => _adService.isAdReady;
+  bool get isAdReady => GameKit.ads.isRewardedReady;
 }

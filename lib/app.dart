@@ -44,7 +44,7 @@ class _YallaAppState extends State<YallaApp> with WidgetsBindingObserver {
 
     return MaterialApp(
       navigatorKey: appNavigatorKey,
-      title: 'Yalla',
+      title: 'Yalla! - 5 seconds',
       debugShowCheckedModeBanner: false,
       locale: localeProvider.locale,
       supportedLocales: const [Locale('ar'), Locale('en')],

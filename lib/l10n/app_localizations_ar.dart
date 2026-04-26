@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appName => 'يلا';
+  String get appName => 'يلا! - ٥ ثوانٍ';
 
   @override
   String get play => 'العب';
@@ -205,6 +205,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get moreGames => 'ألعاب أخرى';
 
   @override
+  String get moreGamesSubtitle => 'جرب لعبة جديدة من قائمتنا.';
+
+  @override
+  String get crossPromoOpen => 'فتح';
+
+  @override
   String get crossPromoEmpty => 'لا توجد ألعاب أخرى حالياً. عد لاحقاً.';
 
   @override
@@ -247,12 +253,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errorTitle => 'حدث خطأ';
 
   @override
-  String get confirmRemoveAdsTitle => 'إزالة الإعلانات؟';
+  String get confirmRemoveAdsTitle => 'تفعيل اللعب بدون إعلانات؟';
 
   @override
   String confirmRemoveAdsMessage(String price) {
-    return 'إزالة كل الإعلانات مقابل $price؟';
+    return 'شراء لمرة واحدة بقيمة $price يزيل إعلان البانر وإعلانات ما بين الجولات على هذا الجهاز.\n\nيمكنك استعادة المشتريات من «استعادة المشتريات» في الإعدادات بعد إعادة التثبيت أو تغيير الجهاز.';
   }
+
+  @override
+  String get confirmRemoveAdsCta => 'متابعة';
+
+  @override
+  String get removeAdsBenefit1 => 'بدون إعلان بانر';
+
+  @override
+  String get removeAdsBenefit2 => 'بدون إعلانات بين الجولات';
 
   @override
   String get sectionAppInfo => 'التطبيق';
@@ -267,7 +282,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sectionContact => 'تواصل';
 
   @override
-  String get appInfoLine => 'يلا — لعبة ٥ ثوانٍ للحفلات';
+  String get appInfoLine => 'يلا! - ٥ ثوانٍ — لعبة حفلات';
 
   @override
   String get removeAdsSubtitle =>
@@ -298,14 +313,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String donationSuccessBody(String total) {
-    return 'تبرعك يساعدنا على تطوير يلا. إجمالي التبرعات: $total';
+    return 'تبرعك يساعدنا على تطوير يلا! - ٥ ثوانٍ. إجمالي التبرعات: $total';
   }
 
   @override
   String get shareApp => 'مشاركة التطبيق';
 
   @override
-  String get shareAppMessage => 'العب يلا — ٥ ثوانٍ معي!';
+  String get shareAppMessage => 'العب يلا! - ٥ ثوانٍ معي!';
 
   @override
   String get websiteTitle => 'الموقع';

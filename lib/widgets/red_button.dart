@@ -18,46 +18,12 @@ class RedButton extends StatefulWidget {
   State<RedButton> createState() => _RedButtonState();
 }
 
-class _RedButtonState extends State<RedButton>
-    with SingleTickerProviderStateMixin {
+class _RedButtonState extends State<RedButton> {
+  static const double _diameter = 118;
+  static const double _pressScale = 0.965;
+
   bool _pressed = false;
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-    if (!widget.enabled) {
-      _pulseController.stop();
-      _pulseController.value = 0;
-    }
-  }
-
-  @override
-  void didUpdateWidget(RedButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.enabled != oldWidget.enabled) {
-      if (widget.enabled) {
-        _pulseController.repeat(reverse: true);
-      } else {
-        _pulseController.stop();
-        _pulseController.value = 0;
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
+  bool _tapLocked = false;
 
   void _onTapDown(TapDownDetails _) {
     if (!widget.enabled) return;
@@ -67,125 +33,93 @@ class _RedButtonState extends State<RedButton>
   void _onTapUp(TapUpDetails _) {
     setState(() => _pressed = false);
     if (!widget.enabled) return;
-    HapticFeedback.heavyImpact();
+    if (_tapLocked) return;
+    _tapLocked = true;
+    HapticFeedback.mediumImpact();
     widget.onPressed();
+    Future<void>.delayed(const Duration(milliseconds: 220), () {
+      _tapLocked = false;
+    });
   }
 
   void _onTapCancel() => setState(() => _pressed = false);
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulseAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _pressed ? 0.9 : _pulseAnimation.value,
-          child: child,
-        );
-      },
-      child: GestureDetector(
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
-        child: Opacity(
-          opacity: widget.enabled ? 1 : 0.38,
+    return Semantics(
+      button: true,
+      enabled: widget.enabled,
+      label: widget.label,
+      child: Opacity(
+        opacity: widget.enabled ? 1 : 0.38,
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOutCubic,
+          scale: _pressed ? _pressScale : 1.0,
           child: SizedBox(
-            width: 160,
-            height: 160,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Outer base ring — the metal housing
-                Container(
-                  width: 160,
-                  height: 160,
+            width: _diameter,
+            height: _diameter,
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkResponse(
+                onTapDown: widget.enabled ? _onTapDown : null,
+                onTapUp: widget.enabled ? _onTapUp : null,
+                onTapCancel: widget.enabled ? _onTapCancel : null,
+                radius: _diameter * 0.5,
+                containedInkWell: true,
+                highlightShape: BoxShape.circle,
+                splashColor: Colors.white.withValues(alpha: 0.10),
+                highlightColor: Colors.white.withValues(alpha: 0.05),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 110),
+                  curve: Curves.easeOutCubic,
+                  width: _diameter,
+                  height: _diameter,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [
-                        Colors.grey.shade600,
-                        Colors.grey.shade800,
-                        Colors.grey.shade900,
+                        AppColors.danger.shade400,
+                        AppColors.danger.shade700,
                       ],
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                      width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.danger.withValues(alpha: 0.22),
+                        color: Colors.black.withValues(alpha: 0.32),
                         blurRadius: 14,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 4),
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                ),
-                // Yellow hazard ring
-                Container(
-                  width: 144,
-                  height: 144,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.amber.shade600, width: 4),
-                  ),
-                ),
-                // Inner red dome — the button itself
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 80),
-                  width: _pressed ? 118 : 126,
-                  height: _pressed ? 118 : 126,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      center: const Alignment(-0.3, -0.3),
-                      colors: [
-                        AppColors.danger.shade400,
-                        AppColors.danger.shade600,
-                        AppColors.danger.shade800,
-                      ],
-                      stops: const [0.0, 0.5, 1.0],
-                    ),
-                    border: Border.all(
-                      color: AppColors.danger.shade900,
-                      width: 3,
-                    ),
-                    boxShadow: _pressed
-                        ? []
-                        : [
-                            BoxShadow(
-                              color: AppColors.danger.shade900.withValues(
-                                alpha: 0.6,
-                              ),
-                              offset: const Offset(0, 6),
-                              blurRadius: 0,
-                            ),
-                          ],
-                  ),
                   child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          widget.label,
-                          style: TextStyle(
-                            fontFamily: AppFonts.family,
-                            color: AppColors.textPrimary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            shadows: [
-                              Shadow(
-                                color: AppColors.danger.shade900,
-                                offset: const Offset(1, 2),
-                                blurRadius: 4,
-                              ),
-                            ],
+                    child: Text(
+                      widget.label,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppFonts.family,
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        height: 1.0,
+                        letterSpacing: 0.2,
+                        shadows: const [
+                          Shadow(
+                            color: Color(0x66000000),
+                            offset: Offset(0, 1),
+                            blurRadius: 4,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),

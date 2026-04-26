@@ -4,36 +4,51 @@ import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'ad_service.dart';
 import 'app_navigator.dart';
 import 'game_kit_products.dart';
+import 'storage_service.dart';
 
 /// Call sites for `game_kit` in this app:
 ///
 /// - [GameKit.ads.levelCompleted] — end of match on [ScoreboardScreen] (`failed: false`).
-/// - [GameKit.ads.adClosed] — [GameKitAdBridge] after each interstitial; [presentOnAbandonHome]
-///   after pause → Home (manual interstitial + [adClosed]).
+/// - [GameKit.ads.adClosed] — [GameKitAdBridge] after each interstitial; [presentOnAbandonHome].
 /// - [GameKit.ads.canShowRewarded] — before rewarded in [LockedCategorySheet].
 /// - [GameKit.notifications.markPlayedToday] — first frame [QuestionScreen].
-/// - [GameKit.notifications.initialize] — again on app resume ([YallaApp] lifecycle).
+/// - [GameKit.notifications.initialize] — inside [GameKit.initialize] on cold start;
+///   [refreshGameKitAfterResume] calls it again on app resume ([YallaApp] lifecycle).
 /// - [GameKit.notifications.onFirstDailyCompletion] — [ScoreboardScreen] first frame.
 /// - [GameKit.rating.levelSucceeded] — after each correct answer [QuestionScreen].
-/// - [GameKit.iap.loadProducts] / purchase / restore — [PurchaseService] + [SettingsScreen].
-/// - [GameKit.crossPromo] — catalog sheet from Settings; badge on home settings.
-/// - [GameKit.haptics] — correct move (question), level complete (scoreboard).
-Future<void> initializeGameKit(AdService adService) async {
+/// - [GameKit.iap] — purchases / restore / prices in [SettingsScreen] & [QuestionScreen].
+/// - [GameKit.crossPromo] — catalog sheet; badge on home settings.
+/// - [GameKit.share] — settings share row.
+/// - [GameKit.haptics] — question & scoreboard.
+Future<void> initializeGameKit(StorageService storage) async {
   await GameKit.initialize(
     GameKitConfig(
-      iap: const IapConfig(
+      iap: IapConfig(
         removeAdsProductId: GameKitProducts.removeAds,
         donationSmallProductId: GameKitProducts.donationSmall,
         donationMediumProductId: GameKitProducts.donationMedium,
         donationLargeProductId: GameKitProducts.donationLarge,
+        donationAmountsByProductId: {
+          GameKitProducts.donationSmall: 0.99,
+          GameKitProducts.donationMedium: 4.99,
+          GameKitProducts.donationLarge: 9.99,
+        },
       ),
-      ads: const AdsConfig(
+      ads: AdsConfig(
         interstitialEveryNLevels: 2,
-        maxPerSession: 8,
-        cooldownSeconds: 30,
+        adMobEnvironment: AdMobUnitEnvironment.test,
+        prodAdMobUnitIds: AdMobProdUnitIds(
+          interstitialAndroid: AdMobGoogleSampleUnitIds.interstitialAndroid,
+          interstitialIos: AdMobGoogleSampleUnitIds.interstitialIos,
+          bannerAndroid: AdMobGoogleSampleUnitIds.bannerAndroid,
+          bannerIos: AdMobGoogleSampleUnitIds.bannerIos,
+          rewardedAndroid: AdMobGoogleSampleUnitIds.rewardedAndroid,
+          rewardedIos: AdMobGoogleSampleUnitIds.rewardedIos,
+        ),
+        interstitialMaxPerSession: 8,
+        interstitialCooldownSeconds: 30,
       ),
       rating: const RatingConfig(),
       notifications: const NotificationsConfig(
@@ -45,9 +60,9 @@ Future<void> initializeGameKit(AdService adService) async {
         notificationTitle: 'Yalla',
         notificationBody: 'Play a quick round today.',
       ),
-      crossPromo: const CrossPromoConfig(
-        apiUrl: 'https://example.com/yalla-promo-games.json',
-        cacheDays: 3,
+      share: const ShareConfig(
+        appName: 'Yalla! - 5 seconds',
+        androidPackageName: 'com.majoon.yalla',
       ),
       storage: const StorageConfig(
         backend: GameKitStoreBackend.sharedPreferences,
@@ -55,16 +70,34 @@ Future<void> initializeGameKit(AdService adService) async {
     ),
   );
 
+  unawaited(GameKit.ads.loadInterstitial());
+  unawaited(GameKit.ads.loadRewarded());
+
+  await _migrateLegacyDonationTotal(storage);
   await _prefetchIapCatalog();
-  GameKitAdBridge.attach(adService);
-  _listenRemoveAdsTooltip();
+  GameKitAdBridge.attach();
   _listenRatingPrompts();
+}
+
+/// Moves `StorageService` donation total into [GameKit.iap] once, if present.
+Future<void> _migrateLegacyDonationTotal(StorageService storage) async {
+  try {
+    final legacy = storage.getDonationTotalAmount();
+    if (legacy <= 0) return;
+    final current = await GameKit.iap.getTotalDonations();
+    if (current > 0) {
+      await storage.clearDonationTotal();
+      return;
+    }
+    await GameKit.iap.addDonation(GameKitProducts.donationSmall, legacy);
+    await storage.clearDonationTotal();
+  } catch (_) {}
 }
 
 Future<void> _prefetchIapCatalog() async {
   if (!GameKit.iap.isAvailable) return;
   try {
-    await GameKit.iap.loadProducts(GameKitProducts.all);
+    await GameKit.iap.loadStoreProducts();
   } catch (_) {}
 }
 
@@ -72,27 +105,6 @@ Future<void> refreshGameKitAfterResume() async {
   try {
     await GameKit.notifications.initialize();
   } catch (_) {}
-}
-
-void _listenRemoveAdsTooltip() {
-  GameKit.ads.onShouldShowRemoveAdsTooltip.listen((_) {
-    final ctx = appNavigatorKey.currentContext;
-    if (ctx == null) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!ctx.mounted) return;
-      ScaffoldMessenger.of(ctx).showSnackBar(
-        SnackBar(
-          content: const Text('Remove ads?'),
-          action: SnackBarAction(
-            label: 'Buy',
-            onPressed: () {
-              unawaited(GameKit.iap.purchaseRemoveAds());
-            },
-          ),
-        ),
-      );
-    });
-  });
 }
 
 void _listenRatingPrompts() {
@@ -156,9 +168,7 @@ Future<void> _showRatingFeedbackDialog(BuildContext context) {
     context: context,
     builder: (c) => AlertDialog(
       title: const Text('Tell us more'),
-      content: const Text(
-        'Send us a quick email with your thoughts.',
-      ),
+      content: const Text('Send us a quick email with your thoughts.'),
       actions: [
         TextButton(
           onPressed: () async {
@@ -183,23 +193,24 @@ Future<void> _showRatingFeedbackDialog(BuildContext context) {
   );
 }
 
-/// `onShouldShowInterstitial` → AdMob → [GameKit.ads.adClosed].
+/// `onShouldShowInterstitial` → [GameKit.ads] load/show → [GameKit.ads.adClosed].
 final class GameKitAdBridge {
   GameKitAdBridge._();
 
   static StreamSubscription<void>? _sub;
   static Completer<void>? _waiter;
 
-  static void attach(AdService ads) {
+  static void attach() {
     _sub?.cancel();
     _sub = GameKit.ads.onShouldShowInterstitial.listen((_) {
-      unawaited(_present(ads));
+      unawaited(_present());
     });
   }
 
-  static Future<void> _present(AdService ads) async {
+  static Future<void> _present() async {
     try {
-      await ads.showInterstitial();
+      await GameKit.ads.loadInterstitial();
+      await GameKit.ads.showInterstitial();
     } finally {
       await GameKit.ads.adClosed();
       if (_waiter != null && !_waiter!.isCompleted) {
@@ -208,10 +219,7 @@ final class GameKitAdBridge {
     }
   }
 
-  static Future<void> presentAfterLevel(
-    AdService ads, {
-    required bool failed,
-  }) async {
+  static Future<void> presentAfterLevel({required bool failed}) async {
     if (GameKit.iap.adsRemoved.value) return;
     _waiter = Completer<void>();
     await GameKit.ads.levelCompleted(failed: failed);
@@ -228,10 +236,11 @@ final class GameKitAdBridge {
     }
   }
 
-  static Future<void> presentOnAbandonHome(AdService ads) async {
+  static Future<void> presentOnAbandonHome() async {
     if (GameKit.iap.adsRemoved.value) return;
     try {
-      await ads.showInterstitial();
+      await GameKit.ads.loadInterstitial();
+      await GameKit.ads.showInterstitial();
     } finally {
       await GameKit.ads.adClosed();
     }

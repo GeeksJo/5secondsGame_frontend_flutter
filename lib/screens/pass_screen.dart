@@ -54,7 +54,7 @@ class _PassScreenState extends State<PassScreen>
 
   void _goToNextQuestion() {
     if (!mounted) return;
-    GameKit.haptics.correctMove();
+    GameKit.haptics.validAction();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const QuestionScreen()),

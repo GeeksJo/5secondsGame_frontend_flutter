@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Play Store upload signing (never commit secrets)
+/android/key.properties
+/android/**/*.jks
+/android/**/*.keystore

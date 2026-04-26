@@ -1,0 +1,117 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "ABA482B9",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "6763879323",
+      "localizations" : [
+        {
+          "description" : "ازالة الاعلانات",
+          "displayName" : "ازالة الاعلانات",
+          "locale" : "ar"
+        },
+        {
+          "description" : "Remove Ads",
+          "displayName" : "Remove Ads",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "yalla.remove_ads",
+      "referenceName" : "Ads Remove",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "7.99",
+      "familyShareable" : false,
+      "internalID" : "6763882206",
+      "localizations" : [
+        {
+          "description" : "ادعم تطوير التطبيق",
+          "displayName" : "ادعم تطوير التطبيق",
+          "locale" : "ar"
+        }
+      ],
+      "productID" : "yalla.donation_large",
+      "referenceName" : "Large Donation",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6763882055",
+      "localizations" : [
+        {
+          "description" : "ادعم تطوير التطبيق",
+          "displayName" : "ادعم تطوير التطبيق",
+          "locale" : "ar"
+        },
+        {
+          "description" : "Support app development",
+          "displayName" : "Support app development",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "yalla.donation_medium",
+      "referenceName" : "Medium Donation",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "6763879400",
+      "localizations" : [
+        {
+          "description" : "Support app development",
+          "displayName" : "Support app development",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "ادعم تطوير التطبيق",
+          "displayName" : "ادعم تطوير التطبيق",
+          "locale" : "ar"
+        }
+      ],
+      "productID" : "yalla.donation_small",
+      "referenceName" : "Small Donation",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6763862332",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "7SKN3Z6G73",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 798892572.61252105,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

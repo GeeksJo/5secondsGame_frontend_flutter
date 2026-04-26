@@ -9,12 +9,8 @@ import 'package:yalla/l10n/app_localizations.dart';
 
 import '../providers/locale_provider.dart';
 import '../services/game_kit_products.dart';
-import '../services/premium_service.dart';
-import '../services/purchase_service.dart';
-import '../services/rating_service.dart';
-import '../services/sharing_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/cross_promo_sheet.dart';
+import '../widgets/app_cross_promo.dart';
 import '../widgets/responsive_layout.dart';
 import '../widgets/settings/donation_sheet.dart';
 import '../widgets/settings/setting_item.dart';
@@ -35,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   StreamSubscription<String>? _restoredSub;
   StreamSubscription<String>? _errorSub;
   StreamSubscription<void>? _startedSub;
+  StreamSubscription<void>? _canceledSub;
   bool _purchaseBusy = false;
   bool _restoreBusy = false;
   DateTime? _lastRestoreAt;
@@ -45,18 +42,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.didChangeDependencies();
     if (_purchaseListenersAttached) return;
     _purchaseListenersAttached = true;
-    final purchases = context.read<PurchaseService>();
 
-    _completeSub = purchases.onPurchaseComplete.listen(
+    _completeSub = GameKit.iap.onPurchaseComplete.listen(
       (productId) => unawaited(_onPurchaseComplete(productId)),
     );
 
-    _restoredSub = purchases.onPurchaseRestored.listen((_) {
+    _restoredSub = GameKit.iap.onPurchaseRestored.listen((_) {
       if (!mounted) return;
       setState(() {});
     });
 
-    _errorSub = purchases.onPurchaseError.listen((code) {
+    _errorSub = GameKit.iap.onPurchaseError.listen((code) {
       if (!mounted) return;
       setState(() => _purchaseBusy = false);
       final l10n = AppLocalizations.of(context)!;
@@ -71,9 +67,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       unawaited(SettingsDialogs.showError(context, msg));
     });
 
-    _startedSub = purchases.onPurchaseStarted.listen((_) {
+    _startedSub = GameKit.iap.onPurchaseStarted.listen((_) {
       if (!mounted) return;
       setState(() => _purchaseBusy = true);
+    });
+
+    _canceledSub = GameKit.iap.onPurchaseCanceled.listen((_) {
+      if (!mounted) return;
+      setState(() => _purchaseBusy = false);
     });
   }
 
@@ -96,11 +97,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     if (_isDonation(productId)) {
-      final amount = _donationAmountUsd(productId);
-      final premium = context.read<PremiumService>();
-      await premium.addDonation(productId, amount);
+      final amount =
+          GameKit.iap.donationAmountFor(productId) ?? _donationAmountUsd(productId);
+      await GameKit.iap.addDonation(productId, amount);
       if (!mounted) return;
-      final total = await premium.getTotalDonations();
+      final total = await GameKit.iap.getTotalDonations();
       if (!mounted) return;
       final locale = Localizations.localeOf(context).toLanguageTag();
       final formatted = NumberFormat.currency(
@@ -134,6 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     unawaited(_restoredSub?.cancel());
     unawaited(_errorSub?.cancel());
     unawaited(_startedSub?.cancel());
+    unawaited(_canceledSub?.cancel());
     super.dispose();
   }
 
@@ -143,23 +145,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _removeAdsFlow(PurchaseService purchases) async {
-    final price = purchases.getFormattedPrice(GameKitProducts.removeAds);
+  Future<void> _removeAdsFlow() async {
+    final price = GameKit.iap.getFormattedPrice(GameKitProducts.removeAds);
     final ok = await SettingsDialogs.showConfirmRemoveAds(
       context,
       price: price,
     );
     if (!ok || !mounted) return;
-    await purchases.purchaseProduct(GameKitProducts.removeAds);
+    await GameKit.iap.purchaseRemoveAds();
   }
 
-  Future<void> _restoreFlow(PurchaseService purchases) async {
+  Future<void> _restoreFlow() async {
     final messenger = ScaffoldMessenger.maybeOf(context);
     final l10n = AppLocalizations.of(context)!;
     setState(() => _restoreBusy = true);
     messenger?.showSnackBar(SnackBar(content: Text(l10n.restoreInProgress)));
-    final ok = await purchases.restorePurchases();
-    if (ok) _lastRestoreAt = DateTime.now();
+    final completer = Completer<bool>();
+    late final StreamSubscription<bool> sub;
+    sub = GameKit.iap.onRestoreComplete.listen((ok) {
+      if (!completer.isCompleted) completer.complete(ok);
+    });
+    bool ok = false;
+    try {
+      await GameKit.iap.restore();
+      ok = await completer.future.timeout(
+        const Duration(seconds: 90),
+        onTimeout: () => false,
+      );
+      if (ok) _lastRestoreAt = DateTime.now();
+    } finally {
+      await sub.cancel();
+    }
     if (!mounted) return;
     setState(() => _restoreBusy = false);
     messenger?.hideCurrentSnackBar();
@@ -171,16 +187,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _share() async {
-    final l10n = AppLocalizations.of(context)!;
     final box =
         _shareButtonKey.currentContext?.findRenderObject() as RenderBox?;
     final origin = box != null && box.hasSize
         ? box.localToGlobal(Offset.zero) & box.size
         : null;
-    await SharingService.shareApp(
+    await GameKit.share.shareApp(
       context: context,
       sharePositionOrigin: origin,
-      message: l10n.shareAppMessage,
     );
   }
 
@@ -188,12 +202,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final localeProvider = context.watch<LocaleProvider>();
-    final purchases = context.read<PurchaseService>();
     final pending =
         _purchaseBusy ||
         _restoreBusy ||
         GameKit.iap.isPending ||
-        purchases.isRestoring;
+        GameKit.iap.isRestoring;
 
     return Scaffold(
       appBar: AppBar(
@@ -273,20 +286,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   )
                                 : Chip(
                                     label: Text(
-                                      purchases.getFormattedPrice(
+                                      GameKit.iap.getFormattedPrice(
                                         GameKitProducts.removeAds,
                                       ),
                                       style: const TextStyle(
                                         fontFamily: AppFonts.family,
                                         fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
-                                    backgroundColor: AppColors.cardBorder
-                                        .withValues(alpha: 0.6),
+                                    backgroundColor: Colors.orange
+                                        .withValues(alpha: 0.38),
+                                    side: BorderSide(
+                                      color: Colors.orange
+                                          .withValues(alpha: 0.72),
+                                      width: 1,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 0,
+                                    ),
                                   ),
                             onTap: removed || pending
                                 ? null
-                                : () => _removeAdsFlow(purchases),
+                                : _removeAdsFlow,
                           ),
                           SettingItem(
                             icon: Icons.restore_rounded,
@@ -298,7 +321,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             enabled: !pending,
                             onTap: pending
                                 ? null
-                                : () => _restoreFlow(purchases),
+                                : _restoreFlow,
                           ),
                         ],
                       );
@@ -327,10 +350,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? null
                         : () => showDonationTierSheet(
                             context: context,
-                            purchases: purchases,
                             l10n: l10n,
                             purchasing: pending,
-                            onPick: (id) => purchases.purchaseProduct(id),
+                            onPick: (id) =>
+                                unawaited(GameKit.iap.purchaseStoreProduct(id)),
                           ),
                   ),
                   SettingItem(
@@ -343,7 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       size: 18,
                       color: AppColors.textMuted,
                     ),
-                    onTap: () => RatingService.openStoreDirectly(),
+                    onTap: () => unawaited(GameKit.rating.openStoreListing()),
                   ),
                   SettingItem(
                     key: _shareButtonKey,
@@ -366,7 +389,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Icons.chevron_right_rounded,
                       color: AppColors.textMuted,
                     ),
-                    onTap: () => showCrossPromoSheet(context),
+                    onTap: () => showAppCrossPromoSheet(context),
                   ),
                 ],
               ),

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:game_kit/game_kit.dart';
+import 'dart:async';
 
 import '../providers/game_provider.dart';
-import '../services/ad_service.dart';
 import '../services/game_kit_bootstrap.dart';
 import '../theme/app_theme.dart';
 import '../widgets/player_score_tile.dart';
@@ -26,12 +26,26 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       setState(() => _adShowing = true);
-      final ads = context.read<AdService>();
-      await GameKit.notifications.onFirstDailyCompletion();
-      await GameKitAdBridge.presentAfterLevel(ads, failed: false);
-      GameKit.haptics.levelComplete();
-      if (mounted) setState(() => _adShowing = false);
+      Timer? failSafe;
+      try {
+        failSafe = Timer(const Duration(seconds: 8), () {
+          if (mounted && _adShowing) setState(() => _adShowing = false);
+        });
+        await GameKit.notifications.onFirstDailyCompletion().timeout(
+          const Duration(seconds: 6),
+          onTimeout: () {},
+        );
+        await GameKitAdBridge.presentAfterLevel(failed: false).timeout(
+          const Duration(seconds: 55),
+          onTimeout: () {},
+        );
+        GameKit.haptics.milestoneSuccess();
+      } finally {
+        failSafe?.cancel();
+        if (mounted) setState(() => _adShowing = false);
+      }
     });
   }
 
@@ -116,19 +130,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                           width: double.infinity,
                           height: AppSpacing.buttonHeight,
                           child: ElevatedButton(
-                            onPressed: _adShowing
-                                ? null
-                                : () {
-                                    game.resetGame();
-                                    Navigator.pushAndRemoveUntil(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const CategorySelectionScreen(),
-                                      ),
-                                      (route) => route.isFirst,
-                                    );
-                                  },
+                            onPressed: () {
+                              game.resetGame();
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const CategorySelectionScreen(),
+                                ),
+                                (route) => route.isFirst,
+                              );
+                            },
                             style: AppButtonStyles.primary,
                             child: Text(l10n.playAgain),
                           ),
@@ -138,21 +150,19 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                           onPressed: _adShowing
                               ? null
                               : () async {
-                                  final ads = context.read<AdService>();
                                   final nav = Navigator.of(context);
                                   setState(() => _adShowing = true);
                                   try {
-                                    await GameKitAdBridge.presentOnAbandonHome(
-                                      ads,
-                                    );
+                                    await GameKitAdBridge.presentOnAbandonHome();
                                   } finally {
-                                    if (!context.mounted) return;
-                                    nav.pushAndRemoveUntil(
-                                      MaterialPageRoute(
-                                        builder: (_) => const HomeScreen(),
-                                      ),
-                                      (route) => false,
-                                    );
+                                    if (context.mounted) {
+                                      nav.pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                          builder: (_) => const HomeScreen(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    }
                                   }
                                 },
                           child: Text(

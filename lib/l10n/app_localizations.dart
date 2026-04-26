@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In ar, this message translates to:
-  /// **'يلا'**
+  /// **'يلا! - ٥ ثوانٍ'**
   String get appName;
 
   /// No description provided for @play.
@@ -488,6 +488,18 @@ abstract class AppLocalizations {
   /// **'ألعاب أخرى'**
   String get moreGames;
 
+  /// No description provided for @moreGamesSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'جرب لعبة جديدة من قائمتنا.'**
+  String get moreGamesSubtitle;
+
+  /// No description provided for @crossPromoOpen.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح'**
+  String get crossPromoOpen;
+
   /// No description provided for @crossPromoEmpty.
   ///
   /// In ar, this message translates to:
@@ -575,14 +587,32 @@ abstract class AppLocalizations {
   /// No description provided for @confirmRemoveAdsTitle.
   ///
   /// In ar, this message translates to:
-  /// **'إزالة الإعلانات؟'**
+  /// **'تفعيل اللعب بدون إعلانات؟'**
   String get confirmRemoveAdsTitle;
 
   /// No description provided for @confirmRemoveAdsMessage.
   ///
   /// In ar, this message translates to:
-  /// **'إزالة كل الإعلانات مقابل {price}؟'**
+  /// **'شراء لمرة واحدة بقيمة {price} يزيل إعلان البانر وإعلانات ما بين الجولات على هذا الجهاز.\n\nيمكنك استعادة المشتريات من «استعادة المشتريات» في الإعدادات بعد إعادة التثبيت أو تغيير الجهاز.'**
   String confirmRemoveAdsMessage(String price);
+
+  /// No description provided for @confirmRemoveAdsCta.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة'**
+  String get confirmRemoveAdsCta;
+
+  /// No description provided for @removeAdsBenefit1.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون إعلان بانر'**
+  String get removeAdsBenefit1;
+
+  /// No description provided for @removeAdsBenefit2.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون إعلانات بين الجولات'**
+  String get removeAdsBenefit2;
 
   /// No description provided for @sectionAppInfo.
   ///
@@ -611,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @appInfoLine.
   ///
   /// In ar, this message translates to:
-  /// **'يلا — لعبة ٥ ثوانٍ للحفلات'**
+  /// **'يلا! - ٥ ثوانٍ — لعبة حفلات'**
   String get appInfoLine;
 
   /// No description provided for @removeAdsSubtitle.
@@ -665,7 +695,7 @@ abstract class AppLocalizations {
   /// No description provided for @donationSuccessBody.
   ///
   /// In ar, this message translates to:
-  /// **'تبرعك يساعدنا على تطوير يلا. إجمالي التبرعات: {total}'**
+  /// **'تبرعك يساعدنا على تطوير يلا! - ٥ ثوانٍ. إجمالي التبرعات: {total}'**
   String donationSuccessBody(String total);
 
   /// No description provided for @shareApp.
@@ -677,7 +707,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareAppMessage.
   ///
   /// In ar, this message translates to:
-  /// **'العب يلا — ٥ ثوانٍ معي!'**
+  /// **'العب يلا! - ٥ ثوانٍ معي!'**
   String get shareAppMessage;
 
   /// No description provided for @websiteTitle.

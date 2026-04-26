@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:game_kit/game_kit.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../services/game_kit_products.dart';
-import '../../services/purchase_service.dart';
 import '../../theme/app_theme.dart';
 
 Future<void> showDonationTierSheet({
   required BuildContext context,
-  required PurchaseService purchases,
   required AppLocalizations l10n,
   required bool purchasing,
   required void Function(String productId) onPick,
@@ -23,7 +22,7 @@ Future<void> showDonationTierSheet({
         required Color accent,
         required IconData icon,
       }) {
-        final price = purchases.getFormattedPrice(productId);
+        final price = GameKit.iap.getFormattedPrice(productId);
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Material(

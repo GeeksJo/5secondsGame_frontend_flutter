@@ -1,6 +1,6 @@
 {
   "@@locale": "ar",
-  "appName": "يلا",
+  "appName": "يلا! - ٥ ثوانٍ",
   "play": "العب",
   "settings": "الإعدادات",
   "howToPlay": "كيف تلعب",
@@ -65,6 +65,8 @@
   "removeAds": "إزالة الإعلانات",
   "adFreeMode": "وضع بدون إعلانات مفعّل.",
   "moreGames": "ألعاب أخرى",
+  "moreGamesSubtitle": "جرب لعبة جديدة من قائمتنا.",
+  "crossPromoOpen": "فتح",
   "crossPromoEmpty": "لا توجد ألعاب أخرى حالياً. عد لاحقاً.",
   "rateApp": "قيّم التطبيق",
   "supportSmall": "دعم — صغير",
@@ -79,8 +81,8 @@
   "dialogCancel": "إلغاء",
   "dialogConfirm": "تأكيد",
   "errorTitle": "حدث خطأ",
-  "confirmRemoveAdsTitle": "إزالة الإعلانات؟",
-  "confirmRemoveAdsMessage": "إزالة كل الإعلانات مقابل {price}؟",
+  "confirmRemoveAdsTitle": "تفعيل اللعب بدون إعلانات؟",
+  "confirmRemoveAdsMessage": "شراء لمرة واحدة بقيمة {price} يزيل إعلان البانر وإعلانات ما بين الجولات على هذا الجهاز.\n\nيمكنك استعادة المشتريات من «استعادة المشتريات» في الإعدادات بعد إعادة التثبيت أو تغيير الجهاز.",
   "@confirmRemoveAdsMessage": {
     "placeholders": {
       "price": {
@@ -88,11 +90,14 @@
       }
     }
   },
+  "confirmRemoveAdsCta": "متابعة",
+  "removeAdsBenefit1": "بدون إعلان بانر",
+  "removeAdsBenefit2": "بدون إعلانات بين الجولات",
   "sectionAppInfo": "التطبيق",
   "sectionPremium": "مميز",
   "sectionSupport": "الدعم",
   "sectionContact": "تواصل",
-  "appInfoLine": "يلا — لعبة ٥ ثوانٍ للحفلات",
+  "appInfoLine": "يلا! - ٥ ثوانٍ — لعبة حفلات",
   "removeAdsSubtitle": "استمتع باللعب بدون إعلانات بانر أو بين الجولات.",
   "restorePurchasesSubtitle": "استعد مشترياتك السابقة على هذا الجهاز.",
   "donateTitle": "تبرع",
@@ -101,7 +106,7 @@
   "purchaseSuccessRemoveAdsTitle": "تم الشراء بنجاح",
   "purchaseSuccessRemoveAdsMessage": "شكراً! تمت إزالة الإعلانات على هذا الجهاز.",
   "donationSuccessTitle": "شكراً لدعمك!",
-  "donationSuccessBody": "تبرعك يساعدنا على تطوير يلا. إجمالي التبرعات: {total}",
+  "donationSuccessBody": "تبرعك يساعدنا على تطوير يلا! - ٥ ثوانٍ. إجمالي التبرعات: {total}",
   "@donationSuccessBody": {
     "placeholders": {
       "total": {
@@ -110,7 +115,7 @@
     }
   },
   "shareApp": "مشاركة التطبيق",
-  "shareAppMessage": "العب يلا — ٥ ثوانٍ معي!",
+  "shareAppMessage": "العب يلا! - ٥ ثوانٍ معي!",
   "websiteTitle": "الموقع",
   "websiteSubtitle": "افتح الموقع الرسمي",
   "contactEmailTitle": "البريد للدعم",
