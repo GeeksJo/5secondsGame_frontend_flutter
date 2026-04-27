@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:game_kit/game_kit.dart';
+
 import '../services/storage_service.dart';
 
 class LocaleProvider extends ChangeNotifier {
@@ -18,6 +20,7 @@ class LocaleProvider extends ChangeNotifier {
   Future<void> setLocale(Locale locale) async {
     _locale = locale;
     await _storage.setLocale(locale.languageCode);
+    GameKit.updateLocale(locale);
     notifyListeners();
   }
 

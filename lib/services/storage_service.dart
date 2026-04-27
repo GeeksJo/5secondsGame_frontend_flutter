@@ -8,6 +8,7 @@ class StorageService {
   static const _soundKey = 'sound_enabled';
   static const _questionTimerKey = 'question_timer_seconds';
   static const _donationTotalKey = 'donation_total_amount';
+  static const _ratingSuccessCountKey = 'rating_success_count';
 
   late final SharedPreferences _prefs;
 
@@ -68,4 +69,17 @@ class StorageService {
   }
 
   Future<void> clearDonationTotal() => _prefs.remove(_donationTotalKey);
+
+  /// Cumulative correct-answer count for [GameKit.rating.levelSucceeded] (1-based
+  /// “level” index). In-game [GameProvider.currentRound] is not suitable: it
+  /// only goes up to [GameProvider.totalRounds] per match, so it never reaches
+  /// [RatingConfig.minLevel] (e.g. 4) in short games.
+  int get ratingSuccessCount => _prefs.getInt(_ratingSuccessCountKey) ?? 0;
+
+  /// Returns the new total after incrementing (for passing to [GameKit.rating]).
+  Future<int> incrementRatingSuccessCount() async {
+    final next = ratingSuccessCount + 1;
+    await _prefs.setInt(_ratingSuccessCountKey, next);
+    return next;
+  }
 }

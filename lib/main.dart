@@ -23,6 +23,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider<StorageService>.value(value: storage),
         ChangeNotifierProvider(create: (_) => LocaleProvider(storage)),
         ChangeNotifierProvider(create: (_) => GameSettingsProvider(storage)),
         ChangeNotifierProvider(create: (_) => CoinProvider(storage)),

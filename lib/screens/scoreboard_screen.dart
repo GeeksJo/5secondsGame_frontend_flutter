@@ -13,7 +13,10 @@ import 'category_selection_screen.dart';
 import 'home_screen.dart';
 
 class ScoreboardScreen extends StatefulWidget {
-  const ScoreboardScreen({super.key});
+  const ScoreboardScreen({super.key, this.adsRoundFailed = false});
+
+  /// When true, the match ended after a timed-out round (vs a successful tap).
+  final bool adsRoundFailed;
 
   @override
   State<ScoreboardScreen> createState() => _ScoreboardScreenState();
@@ -37,7 +40,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           const Duration(seconds: 6),
           onTimeout: () {},
         );
-        await GameKitAdBridge.presentAfterLevel(failed: false).timeout(
+        await GameKitAdBridge.presentAfterLevel(failed: widget.adsRoundFailed).timeout(
           const Duration(seconds: 55),
           onTimeout: () {},
         );

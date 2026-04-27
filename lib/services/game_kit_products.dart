@@ -11,11 +11,4 @@ abstract final class GameKitProducts {
     donationMedium,
     donationLarge,
   };
-
-  /// In-app feedback mail (used after a negative rating path).
-  static Uri get feedbackMailto => Uri.parse(
-    'mailto:support@majoon.app?subject=Yalla%21%20-%205%20seconds%20feedback',
-  );
-
-  static Uri get websiteUrl => Uri.parse('https://majoon.app');
 }

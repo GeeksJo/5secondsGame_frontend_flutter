@@ -13,6 +13,7 @@ import '../providers/game_provider.dart';
 import '../providers/game_settings_provider.dart';
 import '../providers/locale_provider.dart';
 import '../services/game_kit_bootstrap.dart';
+import '../services/storage_service.dart';
 import '../services/game_kit_products.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer.dart';
@@ -20,7 +21,6 @@ import '../widgets/app_cross_promo.dart';
 import '../widgets/game_kit_banner_slot.dart';
 import '../widgets/red_button.dart';
 import '../widgets/responsive_layout.dart';
-import '../widgets/settings/settings_dialogs.dart';
 import 'home_screen.dart';
 import 'pass_screen.dart';
 import 'scoreboard_screen.dart';
@@ -510,9 +510,17 @@ class _QuestionScreenState extends State<QuestionScreen>
 
     final l10n = AppLocalizations.of(context)!;
     final price = GameKit.iap.getFormattedPrice(GameKitProducts.removeAds);
-    final ok = await SettingsDialogs.showConfirmRemoveAds(
+    final ui = GameKit.settingsUi;
+    final dialogColors = GameKitSettingsDialogColors.fromConfig(
+      seedColor: ui?.seedColor ?? AppColors.primary,
+      dialog: ui?.dialog,
+    );
+    final ok = await GameKitSettingsDialogs.showConfirmRemoveAds(
       context,
+      dialogColors: dialogColors,
+      locale: GameKit.locale,
       price: price,
+      fontFamily: ui?.fontFamily,
     );
     if (!ok || !mounted) return;
     await GameKit.iap.purchaseRemoveAds();
@@ -671,11 +679,10 @@ class _QuestionScreenState extends State<QuestionScreen>
     final prevQuestionText = game.currentQuestion?.text(locale) ?? '';
     final prevFlip = game.isFlipped;
     final coinProvider = context.read<CoinProvider>();
-    final levelForRating = game.currentRound;
     final isGameOver = game.answerCorrect();
     coinProvider.addCoins(1);
     GameKit.haptics.validAction();
-    unawaited(GameKit.rating.levelSucceeded(level: levelForRating));
+    unawaited(_notifyRatingAfterCorrectAnswer());
 
     _navigate(
       isGameOver,
@@ -683,6 +690,13 @@ class _QuestionScreenState extends State<QuestionScreen>
       prevName: prevName,
       prevQuestionText: prevQuestionText,
     );
+  }
+
+  Future<void> _notifyRatingAfterCorrectAnswer() async {
+    final storage = context.read<StorageService>();
+    final level = await storage.incrementRatingSuccessCount();
+    if (!mounted) return;
+    await GameKit.rating.levelSucceeded(level: level);
   }
 
   void _onTimeout() {
@@ -697,11 +711,14 @@ class _QuestionScreenState extends State<QuestionScreen>
     final prevFlip = game.isFlipped;
     final isGameOver = game.answerTimeout();
 
+    unawaited(GameKit.rating.levelFailed());
+
     _navigate(
       isGameOver,
       prevFlip: prevFlip,
       prevName: prevName,
       prevQuestionText: prevQuestionText,
+      roundFailed: true,
     );
   }
 
@@ -710,6 +727,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     required bool prevFlip,
     required String prevName,
     required String prevQuestionText,
+    bool roundFailed = false,
   }) {
     if (!mounted) return;
     final game = context.read<GameProvider>();
@@ -717,7 +735,9 @@ class _QuestionScreenState extends State<QuestionScreen>
     if (isGameOver) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const ScoreboardScreen()),
+        MaterialPageRoute(
+          builder: (_) => ScoreboardScreen(adsRoundFailed: roundFailed),
+        ),
       );
     } else if (game.mode == GameMode.oneVsOne) {
       _playTurnFlip(

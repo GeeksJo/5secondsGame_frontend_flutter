@@ -4,27 +4,50 @@ import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../theme/app_theme.dart';
 import 'app_navigator.dart';
 import 'game_kit_products.dart';
 import 'storage_service.dart';
 
 /// Call sites for `game_kit` in this app:
 ///
-/// - [GameKit.ads.levelCompleted] — end of match on [ScoreboardScreen] (`failed: false`).
+/// - [GameKit.ads.levelCompleted] — end of match on [ScoreboardScreen]
+///   (`failed: false` on win, `failed: true` when match ends after a timeout).
 /// - [GameKit.ads.adClosed] — [GameKitAdBridge] after each interstitial; [presentOnAbandonHome].
 /// - [GameKit.ads.canShowRewarded] — before rewarded in [LockedCategorySheet].
 /// - [GameKit.notifications.markPlayedToday] — first frame [QuestionScreen].
 /// - [GameKit.notifications.initialize] — inside [GameKit.initialize] on cold start;
 ///   [refreshGameKitAfterResume] calls it again on app resume ([YallaApp] lifecycle).
 /// - [GameKit.notifications.onFirstDailyCompletion] — [ScoreboardScreen] first frame.
-/// - [GameKit.rating.levelSucceeded] — after each correct answer [QuestionScreen].
+/// - [GameKit.rating.levelSucceeded] — after each correct answer [QuestionScreen]
+///   with cumulative [StorageService.incrementRatingSuccessCount] (not in-game round).
 /// - [GameKit.iap] — purchases / restore / prices in [SettingsScreen] & [QuestionScreen].
 /// - [GameKit.crossPromo] — catalog sheet; badge on home settings.
 /// - [GameKit.share] — settings share row.
 /// - [GameKit.haptics] — question & scoreboard.
 Future<void> initializeGameKit(StorageService storage) async {
+  final persistedLocale = Locale(storage.getLocale());
   await GameKit.initialize(
     GameKitConfig(
+      locale: persistedLocale,
+      crossPromoSheetSeedColor: AppColors.primary,
+      settingsUi: GameKitSettingsUiConfig(
+        seedColor: AppColors.primary,
+        iconColor: AppColors.primary,
+        fontFamily: AppFonts.family,
+        sectionCardAppearance: GameKitSectionCardAppearance.frosted,
+        showCrossPromo: true,
+        dialog: GameKitSettingsDialogUiConfig(
+          darkSurfaceColor: AppColors.surface,
+          darkBorderColor: AppColors.cardBorder,
+          darkTitleColor: AppColors.textPrimary,
+          darkBodyColor: AppColors.textSecondary,
+          alertSurfaceColor: AppColors.surface,
+          alertOutlineColor: AppColors.cardBorder,
+          alertTitleColor: AppColors.textPrimary,
+          alertBodyColor: AppColors.textSecondary,
+        ),
+      ),
       iap: IapConfig(
         removeAdsProductId: GameKitProducts.removeAds,
         donationSmallProductId: GameKitProducts.donationSmall,
@@ -50,7 +73,11 @@ Future<void> initializeGameKit(StorageService storage) async {
         interstitialMaxPerSession: 8,
         interstitialCooldownSeconds: 30,
       ),
-      rating: const RatingConfig(),
+      // [minLevel] is compared to a *cumulative* success count (see
+      // [StorageService.incrementRatingSuccessCount]), not in-game round index.
+      // [minSession] 1: first app session can show a prompt once other gates pass
+      // (default 2 would require a second cold start before any prompt).
+      rating: const RatingConfig(minSession: 1),
       notifications: const NotificationsConfig(
         days: [DateTime.monday, DateTime.wednesday, DateTime.friday],
         hour: 18,
@@ -67,6 +94,7 @@ Future<void> initializeGameKit(StorageService storage) async {
       storage: const StorageConfig(
         backend: GameKitStoreBackend.sharedPreferences,
       ),
+      haptics: HapticsConfig(isEnabled: () => storage.getSoundEnabled()),
     ),
   );
 
@@ -77,6 +105,7 @@ Future<void> initializeGameKit(StorageService storage) async {
   await _prefetchIapCatalog();
   GameKitAdBridge.attach();
   _listenRatingPrompts();
+  _listenRemoveAdsTooltip();
 }
 
 /// Moves `StorageService` donation total into [GameKit.iap] once, if present.
@@ -105,6 +134,27 @@ Future<void> refreshGameKitAfterResume() async {
   try {
     await GameKit.notifications.initialize();
   } catch (_) {}
+}
+
+void _listenRemoveAdsTooltip() {
+  GameKit.ads.onShouldShowRemoveAdsTooltip.listen((_) {
+    final ctx = appNavigatorKey.currentContext;
+    if (ctx == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!ctx.mounted) return;
+      final messenger = ScaffoldMessenger.maybeOf(ctx);
+      final l10n = GameKitLocalizations.of(ctx);
+      messenger?.showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(
+            l10n.settingsRemoveAdsSubtitle,
+            style: TextStyle(fontFamily: GameKit.settingsUi?.fontFamily),
+          ),
+        ),
+      );
+    });
+  });
 }
 
 void _listenRatingPrompts() {
@@ -173,7 +223,7 @@ Future<void> _showRatingFeedbackDialog(BuildContext context) {
         TextButton(
           onPressed: () async {
             Navigator.pop(c);
-            final u = GameKitProducts.feedbackMailto;
+            final u = GameKitDefaultContact.feedbackMailto;
             if (await canLaunchUrl(u)) {
               await launchUrl(u);
             }
