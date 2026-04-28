@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -27,6 +28,13 @@ import 'storage_service.dart';
 /// - [GameKit.haptics] — question & scoreboard.
 Future<void> initializeGameKit(StorageService storage) async {
   final persistedLocale = Locale(storage.getLocale());
+
+  String _env(String key) => (dotenv.env[key] ?? '').trim();
+  String _envOr(String key, String fallback) {
+    final v = _env(key);
+    return v.isEmpty ? fallback : v;
+  }
+
   await GameKit.initialize(
     GameKitConfig(
       locale: persistedLocale,
@@ -61,14 +69,32 @@ Future<void> initializeGameKit(StorageService storage) async {
       ),
       ads: AdsConfig(
         interstitialEveryNLevels: 2,
-        adMobEnvironment: AdMobUnitEnvironment.test,
+        adMobEnvironment: AdMobUnitEnvironment.prod,
         prodAdMobUnitIds: AdMobProdUnitIds(
-          interstitialAndroid: AdMobGoogleSampleUnitIds.interstitialAndroid,
-          interstitialIos: AdMobGoogleSampleUnitIds.interstitialIos,
-          bannerAndroid: AdMobGoogleSampleUnitIds.bannerAndroid,
-          bannerIos: AdMobGoogleSampleUnitIds.bannerIos,
-          rewardedAndroid: AdMobGoogleSampleUnitIds.rewardedAndroid,
-          rewardedIos: AdMobGoogleSampleUnitIds.rewardedIos,
+          interstitialAndroid: _envOr(
+            'ADMOB_ANDROID_INTERSTITIAL_ID',
+            AdMobGoogleSampleUnitIds.interstitialAndroid,
+          ),
+          interstitialIos: _envOr(
+            'ADMOB_IOS_INTERSTITIAL_ID',
+            AdMobGoogleSampleUnitIds.interstitialIos,
+          ),
+          bannerAndroid: _envOr(
+            'ADMOB_ANDROID_BANNER_ID',
+            AdMobGoogleSampleUnitIds.bannerAndroid,
+          ),
+          bannerIos: _envOr(
+            'ADMOB_IOS_BANNER_ID',
+            AdMobGoogleSampleUnitIds.bannerIos,
+          ),
+          rewardedAndroid: _envOr(
+            'ADMOB_ANDROID_REWARDED_ID',
+            AdMobGoogleSampleUnitIds.rewardedAndroid,
+          ),
+          rewardedIos: _envOr(
+            'ADMOB_IOS_REWARDED_ID',
+            AdMobGoogleSampleUnitIds.rewardedIos,
+          ),
         ),
         interstitialMaxPerSession: 8,
         interstitialCooldownSeconds: 30,
@@ -95,6 +121,7 @@ Future<void> initializeGameKit(StorageService storage) async {
         backend: GameKitStoreBackend.sharedPreferences,
       ),
       haptics: HapticsConfig(isEnabled: () => storage.getSoundEnabled()),
+      crossPromoAppIdentifier: 'com.majoon.yalla',
     ),
   );
 

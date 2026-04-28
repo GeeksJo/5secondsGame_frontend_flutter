@@ -8,6 +8,7 @@ import '../models/game_state.dart';
 import '../providers/locale_provider.dart';
 import '../providers/game_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_cross_promo.dart';
 import '../widgets/responsive_layout.dart';
 import 'category_selection_screen.dart';
 import 'settings_screen.dart';
@@ -249,31 +250,53 @@ class HomeScreen extends StatelessWidget {
                                 ),
                         ),
                         const SizedBox(height: 14),
-                        TextButton.icon(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const HowToPlayScreen(),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.help_outline,
-                            color: AppColors.textSecondary,
-                          ),
-                          label: Text(
-                            isArabic ? 'طريقة اللعب' : 'How to play',
-                            style: const TextStyle(
-                              fontFamily: AppFonts.family,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.textSecondary,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            children: [
+                              StreamBuilder<bool>(
+                                initialData: GameKit.crossPromo.hasNewGame,
+                                stream: GameKit.crossPromo.hasNewGameChanges,
+                                builder: (context, snap) {
+                                  final showBadge = snap.data ?? false;
+                                  return _MoreGamesPillButton(
+                                    label: l10n.moreGames,
+                                    showBadge: showBadge,
+                                    onTap: () =>
+                                        showAppCrossPromoSheet(context),
+                                    isRtl: isRtl,
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              TextButton.icon(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const HowToPlayScreen(),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.help_outline,
+                                  color: AppColors.textSecondary,
+                                ),
+                                label: Text(
+                                  isArabic ? 'طريقة اللعب' : 'How to play',
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.family,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.textSecondary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -503,6 +526,168 @@ class _ModeButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _MoreGamesPillButton extends StatelessWidget {
+  final String label;
+  final bool showBadge;
+  final VoidCallback onTap;
+  final bool isRtl;
+
+  const _MoreGamesPillButton({
+    required this.label,
+    required this.showBadge,
+    required this.onTap,
+    required this.isRtl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isTablet = ResponsiveLayout.isTablet(context);
+    // Palette inspired by `assets/images/yalla.png` (logo)
+    const ink = Color(0xFF1E2A33);
+    const dynamiteRed = Color(0xFFE31B23);
+    const cream = Color(0xFFF5F1E6);
+    const cream2 = Color(0xFFE9E4D7);
+    const accentBlue = Color(0xFF3BA6F2);
+
+    final chevronIcon = isRtl
+        ? Icons.chevron_right_rounded
+        : Icons.chevron_left_rounded;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          splashColor: Colors.white.withValues(alpha: 0.12),
+          highlightColor: Colors.transparent,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 18 : 16,
+              vertical: isTablet ? 20 : 18,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  cream.withValues(alpha: 0.96),
+                  cream2.withValues(alpha: 0.92),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: ink.withValues(alpha: 0.14)),
+              boxShadow: [
+                BoxShadow(
+                  color: ink.withValues(alpha: 0.18),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+
+                BoxShadow(
+                  color: accentBlue.withValues(alpha: 0.14),
+                  blurRadius: 22,
+                  offset: const Offset(0, 0),
+                ),
+              ],
+            ),
+            foregroundDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border(bottom: BorderSide(color: dynamiteRed, width: 3)),
+            ),
+            child: Stack(
+              children: [
+                Row(
+                  textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+                  children: [
+                    Container(
+                      width: isTablet ? 52 : 46,
+                      height: isTablet ? 52 : 46,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.70),
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        border: Border.all(color: ink.withValues(alpha: 0.14)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Image.asset(
+                          'assets/images/game_controller.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppFonts.family,
+                          color: ink,
+                          fontSize: isTablet ? 20 : 16.5,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: isTablet ? 42 : 38,
+                      height: isTablet ? 42 : 38,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.68),
+                        borderRadius: BorderRadius.circular(AppRadius.round),
+                        border: Border.all(color: ink.withValues(alpha: 0.14)),
+                      ),
+                      child: Icon(
+                        chevronIcon,
+                        size: isTablet ? 26 : 24,
+                        color: ink.withValues(alpha: 0.92),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (showBadge)
+          Positioned(
+            top: -6,
+            right: isRtl ? null : 10,
+            left: isRtl ? 10 : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: dynamiteRed,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: const Text(
+                'NEW',
+                style: TextStyle(
+                  fontFamily: AppFonts.family,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  letterSpacing: 0.6,
+                  height: 1.0,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

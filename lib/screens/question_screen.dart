@@ -463,27 +463,27 @@ class _QuestionScreenState extends State<QuestionScreen>
         const Spacer(flex: 3),
         RedButton(label: l10n.done, enabled: redEnabled, onPressed: onDone),
         const Spacer(flex: 1),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 20),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: isTablet ? 420 : 360),
-              child: Tooltip(
-                message: l10n.moreGames,
-                child: Semantics(
-                  button: true,
-                  label: l10n.moreGames,
-                  enabled: onOtherGames != null,
-                  child: _buildOtherGamesCta(
-                    l10n: l10n,
-                    isTablet: isTablet,
-                    onOtherGames: onOtherGames,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+        // Padding(
+        //   padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 20),
+        //   child: Center(
+        //     child: ConstrainedBox(
+        //       constraints: BoxConstraints(maxWidth: isTablet ? 420 : 360),
+        //       child: Tooltip(
+        //         message: l10n.moreGames,
+        //         child: Semantics(
+        //           button: true,
+        //           label: l10n.moreGames,
+        //           enabled: onOtherGames != null,
+        //           child: _buildOtherGamesCta(
+        //             l10n: l10n,
+        //             isTablet: isTablet,
+        //             onOtherGames: onOtherGames,
+        //           ),
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
         const SizedBox(height: 10),
         ValueListenableBuilder<bool>(
           valueListenable: GameKit.ads.bannersEnabled,
@@ -829,28 +829,91 @@ class _QuestionScreenState extends State<QuestionScreen>
             bottom: false,
             child: ResponsiveLayout(
               maxWidth: 600,
-              child: AnimatedBuilder(
-                animation: _turnFlipController,
-                builder: (context, child) {
-                  final baseFrom = _flipFrom ? math.pi : 0.0;
-                  final baseTo = _flipTo ? math.pi : 0.0;
-                  final t = _turnFlipping
-                      ? Curves.easeInOutCubic.transform(
-                          _turnFlipController.value,
-                        )
-                      : 1.0;
-                  final angle = _turnFlipping
-                      ? baseFrom + (baseTo - baseFrom) * t
-                      : (game.isFlipped ? math.pi : 0.0);
-                  return Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.identity()..rotateZ(angle),
-                    child: _turnFlipping && _turnFlipController.value >= 0.5
-                        ? _buildLiveBody(context)
-                        : child,
-                  );
-                },
-                child: body,
+              child: Stack(
+                children: [
+                  AnimatedBuilder(
+                    animation: _turnFlipController,
+                    builder: (context, child) {
+                      final baseFrom = _flipFrom ? math.pi : 0.0;
+                      final baseTo = _flipTo ? math.pi : 0.0;
+                      final t = _turnFlipping
+                          ? Curves.easeInOutCubic.transform(
+                              _turnFlipController.value,
+                            )
+                          : 1.0;
+                      final angle = _turnFlipping
+                          ? baseFrom + (baseTo - baseFrom) * t
+                          : (game.isFlipped ? math.pi : 0.0);
+                      return Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()..rotateZ(angle),
+                        child: _turnFlipping && _turnFlipController.value >= 0.5
+                            ? _buildLiveBody(context)
+                            : child,
+                      );
+                    },
+                    child: body,
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _turnFlipping ? null : _openOtherGames,
+                          borderRadius: BorderRadius.circular(AppRadius.round),
+                          child: Ink(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(
+                                    0xFF52E3D7,
+                                  ).withValues(alpha: 0.95),
+                                  const Color(
+                                    0xFF23BEB4,
+                                  ).withValues(alpha: 0.95),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.round,
+                              ),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.22),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.18),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Transform.rotate(
+                              angle: 0.78539816339, // 45°
+                              child: Center(
+                                child: Transform.rotate(
+                                  angle: -0.78539816339,
+                                  child: Image.asset(
+                                    'assets/images/game_controller.png',
+                                    width: 24,
+                                    height: 24,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

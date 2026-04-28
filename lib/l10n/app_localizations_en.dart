@@ -206,7 +206,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adFreeMode => 'Ad-free mode is on.';
 
   @override
-  String get moreGames => 'More games';
+  String get moreGames => 'More Puzzles';
 
   @override
   String get moreGamesSubtitle => 'Try a new game from our list.';
