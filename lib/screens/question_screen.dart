@@ -463,27 +463,7 @@ class _QuestionScreenState extends State<QuestionScreen>
         const Spacer(flex: 3),
         RedButton(label: l10n.done, enabled: redEnabled, onPressed: onDone),
         const Spacer(flex: 1),
-        // Padding(
-        //   padding: EdgeInsets.symmetric(horizontal: isTablet ? 12 : 20),
-        //   child: Center(
-        //     child: ConstrainedBox(
-        //       constraints: BoxConstraints(maxWidth: isTablet ? 420 : 360),
-        //       child: Tooltip(
-        //         message: l10n.moreGames,
-        //         child: Semantics(
-        //           button: true,
-        //           label: l10n.moreGames,
-        //           enabled: onOtherGames != null,
-        //           child: _buildOtherGamesCta(
-        //             l10n: l10n,
-        //             isTablet: isTablet,
-        //             onOtherGames: onOtherGames,
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
+
         const SizedBox(height: 10),
         ValueListenableBuilder<bool>(
           valueListenable: GameKit.ads.bannersEnabled,
