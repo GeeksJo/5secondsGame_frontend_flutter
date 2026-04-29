@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yalla/widgets/responsive_layout.dart';
 
 abstract class AppFonts {
   static const family = 'ElMessiri';
@@ -38,13 +39,14 @@ abstract class AppGradients {
   );
 }
 
-abstract class AppRadius {
+class AppRadius {
   static const sm = 8.0;
   static const md = 12.0;
   static const lg = 16.0;
   static const xl = 20.0;
   static const pill = 26.0;
-  static const round = 28.0;
+  static double round(BuildContext context) =>
+      ResponsiveLayout.isTablet(context) ? 100.0 : 28.0;
 }
 
 abstract class AppSpacing {
@@ -127,9 +129,7 @@ ThemeData buildAppTheme(bool isArabic) {
       style: TextButton.styleFrom(textStyle: buttonLabelFont),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
-      style: ButtonStyle(
-        textStyle: WidgetStateProperty.all(buttonLabelFont),
-      ),
+      style: ButtonStyle(textStyle: WidgetStateProperty.all(buttonLabelFont)),
     ),
   );
 }

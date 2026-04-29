@@ -71,6 +71,114 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final ranked =
         widget.debugRankedPlayers ?? game.rankedPlayers;
     final isTablet = ResponsiveLayout.isTablet(context);
+    final landscape = ResponsiveLayout.isLandscape(context);
+    final maxW = ResponsiveLayout.maxWidthFor(
+      context,
+      phone: 560,
+      tabletPortrait: 720,
+      tabletLandscape: 900,
+    );
+    final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
+
+    Widget headerBlock() {
+      if (landscape) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(12, isTablet ? 12 : 8, 12, 0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(isTablet ? 14 : 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.cardFill,
+                  border: Border.all(
+                    color: AppColors.cardBorder.withValues(alpha: 0.65),
+                  ),
+                ),
+                child: Icon(
+                  Icons.emoji_events_rounded,
+                  color: AppColors.coin,
+                  size: isTablet ? 40 : 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.scoreboard,
+                      style: TextStyle(
+                        fontFamily: AppFonts.family,
+                        color: AppColors.textPrimary,
+                        fontSize: isTablet ? 28.0 : 22.0,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.score,
+                      style: TextStyle(
+                        fontFamily: AppFonts.family,
+                        color: AppColors.textMuted,
+                        fontSize: isTablet ? 14.0 : 12.0,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return Column(
+        children: [
+          SizedBox(height: isTablet ? 28 : 20),
+          Container(
+            padding: EdgeInsets.all(isTablet ? 18 : 14),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.cardFill,
+              border: Border.all(
+                color: AppColors.cardBorder.withValues(alpha: 0.65),
+              ),
+            ),
+            child: Icon(
+              Icons.emoji_events_rounded,
+              color: AppColors.coin,
+              size: isTablet ? 44 : 36,
+            ),
+          ),
+          SizedBox(height: isTablet ? 20 : 16),
+          Text(
+            l10n.scoreboard,
+            style: TextStyle(
+              fontFamily: AppFonts.family,
+              color: AppColors.textPrimary,
+              fontSize: isTablet ? 32.0 : 26.0,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.score,
+            style: TextStyle(
+              fontFamily: AppFonts.family,
+              color: AppColors.textMuted,
+              fontSize: isTablet ? 15.0 : 13.0,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.3,
+            ),
+          ),
+          SizedBox(height: isTablet ? 22 : 18),
+        ],
+      );
+    }
 
     return PopScope(
       canPop: false,
@@ -80,50 +188,15 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           height: double.infinity,
           decoration: AppDecorations.gradientBg,
           child: SafeArea(
-            child: ResponsiveLayout(
-              maxWidth: 560,
-              child: Column(
-                children: [
-                  SizedBox(height: isTablet ? 28 : 20),
-                  Container(
-                    padding: EdgeInsets.all(isTablet ? 18 : 14),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.cardFill,
-                      border: Border.all(
-                        color: AppColors.cardBorder.withValues(alpha: 0.65),
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.emoji_events_rounded,
-                      color: AppColors.coin,
-                      size: isTablet ? 44 : 36,
-                    ),
-                  ),
-                  SizedBox(height: isTablet ? 20 : 16),
-                  Text(
-                    l10n.scoreboard,
-                    style: TextStyle(
-                      fontFamily: AppFonts.family,
-                      color: AppColors.textPrimary,
-                      fontSize: isTablet ? 32.0 : 26.0,
-                      fontWeight: FontWeight.w800,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n.score,
-                    style: TextStyle(
-                      fontFamily: AppFonts.family,
-                      color: AppColors.textMuted,
-                      fontSize: isTablet ? 15.0 : 13.0,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  SizedBox(height: isTablet ? 22 : 18),
-                  Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: hPad),
+              child: ResponsiveLayout(
+                maxWidth: maxW,
+                child: Column(
+                  children: [
+                    headerBlock(),
+                    if (landscape) const SizedBox(height: 12),
+                    Expanded(
                     child: ListView.separated(
                       padding: AppSpacing.screenH.copyWith(bottom: 8),
                       itemCount: ranked.length,
@@ -200,6 +273,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

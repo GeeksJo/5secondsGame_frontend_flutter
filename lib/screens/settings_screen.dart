@@ -28,6 +28,14 @@ class SettingsScreen extends StatelessWidget {
             sectionCardAppearance: GameKitSectionCardAppearance.frosted,
           );
 
+    final maxW = ResponsiveLayout.maxWidthFor(
+      context,
+      phone: 520,
+      tabletPortrait: 640,
+      tabletLandscape: 760,
+    );
+    final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.settings),
@@ -38,83 +46,86 @@ class SettingsScreen extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         decoration: AppDecorations.gradientBg,
-        child: ResponsiveLayout(
-          maxWidth: 520,
-          child: ListView(
-            padding: AppSpacing.screenPadding,
-            children: [
-              GameKitSettingSectionWidget(
-                palette: palette,
-                margin: EdgeInsets.zero,
-                headerIcon: Icons.apps_rounded,
-                headerTitle: l10n.sectionAppInfo,
-                fontFamily: AppFonts.family,
-                child: GameKitSettingItem(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: hPad),
+          child: ResponsiveLayout(
+            maxWidth: maxW,
+            child: ListView(
+              padding: AppSpacing.screenPadding,
+              children: [
+                GameKitSettingSectionWidget(
                   palette: palette,
+                  margin: EdgeInsets.zero,
+                  headerIcon: Icons.apps_rounded,
+                  headerTitle: l10n.sectionAppInfo,
                   fontFamily: AppFonts.family,
-                  icon: Icons.celebration_outlined,
-                  title: l10n.appName,
-                  subtitle: l10n.appInfoLine,
-                  showDivider: false,
+                  child: GameKitSettingItem(
+                    palette: palette,
+                    fontFamily: AppFonts.family,
+                    icon: Icons.celebration_outlined,
+                    title: l10n.appName,
+                    subtitle: l10n.appInfoLine,
+                    showDivider: false,
+                  ),
                 ),
-              ),
-              SizedBox(height: _sectionSpacing),
-              GameKitSettingSectionWidget(
-                palette: palette,
-                margin: EdgeInsets.zero,
-                fontFamily: AppFonts.family,
-                child: _soundTile(context, localeProvider, palette),
-              ),
-              SizedBox(height: _sectionSpacing),
-              _MoreGamesCard(
-                title: l10n.moreGames,
-                subtitle: l10n.moreGamesSubtitle,
-                onTap: () => showAppCrossPromoSheet(context),
-              ),
-              SizedBox(height: _sectionSpacing),
-              const GameKitSettingsBody(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                sectionSpacing: _sectionSpacing,
-                maxWidth: double.infinity,
-              ),
-              if (kDebugMode) ...[
                 SizedBox(height: _sectionSpacing),
-                ListTile(
-                  leading: Icon(
-                    Icons.leaderboard_outlined,
-                    color: AppColors.textSecondary,
-                  ),
-                  title: Text(
-                    'Preview results (debug)',
-                    style: TextStyle(
-                      fontFamily: AppFonts.family,
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Scoreboard test data',
-                    style: TextStyle(
-                      fontFamily: AppFonts.family,
-                      color: AppColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => ScoreboardScreen(
-                          debugRankedPlayers:
-                              ScoreboardScreenTestData.rankedPlayersFixture(),
-                        ),
-                      ),
-                    );
-                  },
+                GameKitSettingSectionWidget(
+                  palette: palette,
+                  margin: EdgeInsets.zero,
+                  fontFamily: AppFonts.family,
+                  child: _soundTile(context, localeProvider, palette),
                 ),
+                SizedBox(height: _sectionSpacing),
+                _MoreGamesCard(
+                  title: l10n.moreGames,
+                  subtitle: l10n.moreGamesSubtitle,
+                  onTap: () => showAppCrossPromoSheet(context),
+                ),
+                SizedBox(height: _sectionSpacing),
+                const GameKitSettingsBody(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  sectionSpacing: _sectionSpacing,
+                  maxWidth: double.infinity,
+                ),
+                if (kDebugMode) ...[
+                  SizedBox(height: _sectionSpacing),
+                  ListTile(
+                    leading: Icon(
+                      Icons.leaderboard_outlined,
+                      color: AppColors.textSecondary,
+                    ),
+                    title: Text(
+                      'Preview results (debug)',
+                      style: TextStyle(
+                        fontFamily: AppFonts.family,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Scoreboard test data',
+                      style: TextStyle(
+                        fontFamily: AppFonts.family,
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => ScoreboardScreen(
+                            debugRankedPlayers:
+                                ScoreboardScreenTestData.rankedPlayersFixture(),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -176,7 +187,9 @@ class _MoreGamesCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(AppRadius.round),
+                    borderRadius: BorderRadius.circular(
+                      AppRadius.round(context),
+                    ),
                     border: Border.all(color: AppColors.cardBorder),
                   ),
                   child: Padding(

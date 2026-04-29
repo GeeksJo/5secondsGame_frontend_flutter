@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import 'responsive_layout.dart';
 
 class RedButton extends StatefulWidget {
   final String label;
   final VoidCallback onPressed;
   final bool enabled;
 
+  /// When null, diameter follows [ResponsiveLayout.redButtonDiameter].
+  final double? diameter;
+
   const RedButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.enabled = true,
+    this.diameter,
   });
 
   @override
@@ -19,7 +24,7 @@ class RedButton extends StatefulWidget {
 }
 
 class _RedButtonState extends State<RedButton> {
-  static const double _diameter = 118;
+  static const double _defaultDiameter = 118;
   static const double _pressScale = 0.965;
 
   bool _pressed = false;
@@ -46,6 +51,10 @@ class _RedButtonState extends State<RedButton> {
 
   @override
   Widget build(BuildContext context) {
+    final d = widget.diameter ??
+        ResponsiveLayout.redButtonDiameter(context);
+    final fontSize = (18 * (d / _defaultDiameter)).clamp(16.0, 28.0);
+
     return Semantics(
       button: true,
       enabled: widget.enabled,
@@ -57,15 +66,15 @@ class _RedButtonState extends State<RedButton> {
           curve: Curves.easeOutCubic,
           scale: _pressed ? _pressScale : 1.0,
           child: SizedBox(
-            width: _diameter,
-            height: _diameter,
+            width: d,
+            height: d,
             child: Material(
               type: MaterialType.transparency,
               child: InkResponse(
                 onTapDown: widget.enabled ? _onTapDown : null,
                 onTapUp: widget.enabled ? _onTapUp : null,
                 onTapCancel: widget.enabled ? _onTapCancel : null,
-                radius: _diameter * 0.5,
+                radius: d * 0.5,
                 containedInkWell: true,
                 highlightShape: BoxShape.circle,
                 splashColor: Colors.white.withValues(alpha: 0.10),
@@ -73,8 +82,8 @@ class _RedButtonState extends State<RedButton> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 110),
                   curve: Curves.easeOutCubic,
-                  width: _diameter,
-                  height: _diameter,
+                  width: d,
+                  height: d,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -104,7 +113,7 @@ class _RedButtonState extends State<RedButton> {
                       style: TextStyle(
                         fontFamily: AppFonts.family,
                         color: AppColors.textPrimary,
-                        fontSize: 18,
+                        fontSize: fontSize,
                         fontWeight: FontWeight.w800,
                         height: 1.0,
                         letterSpacing: 0.2,

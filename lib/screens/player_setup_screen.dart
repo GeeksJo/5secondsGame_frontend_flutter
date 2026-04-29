@@ -53,11 +53,67 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
     });
   }
 
+  Widget _buildNameField(
+    BuildContext context,
+    AppLocalizations l10n,
+    int index,
+    bool isFFA,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _controllers[index],
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              hintText: '${l10n.enterPlayerName} ${index + 1}',
+              hintStyle: const TextStyle(
+                color: AppColors.textHint,
+              ),
+              filled: true,
+              fillColor: AppColors.cardFill,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  AppRadius.md,
+                ),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+        if (isFFA && _controllers.length > 2)
+          IconButton(
+            icon: const Icon(
+              Icons.remove_circle_outline,
+              color: AppColors.danger,
+            ),
+            onPressed: () => _removePlayer(index),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final mode = context.watch<GameProvider>().mode;
     final isFFA = mode == GameMode.freeForAll;
+    final twoCols = ResponsiveLayout.isTablet(context) &&
+        ResponsiveLayout.isLandscape(context);
+    final maxW = ResponsiveLayout.maxWidthFor(
+      context,
+      phone: 520,
+      tabletPortrait: 680,
+      tabletLandscape: 920,
+    );
+    final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -69,102 +125,95 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
         width: double.infinity,
         height: double.infinity,
         decoration: AppDecorations.gradientBg,
-        child: ResponsiveLayout(
-          maxWidth: 500,
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: AppSpacing.screenPadding,
-                  itemCount: _controllers.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _controllers[index],
-                              onChanged: (_) => setState(() {}),
-                              decoration: InputDecoration(
-                                hintText:
-                                    '${l10n.enterPlayerName} ${index + 1}',
-                                hintStyle: const TextStyle(
-                                  color: AppColors.textHint,
-                                ),
-                                filled: true,
-                                fillColor: AppColors.cardFill,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadius.md,
-                                  ),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
-                              ),
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: hPad),
+          child: ResponsiveLayout(
+            maxWidth: maxW,
+            child: Column(
+              children: [
+                Expanded(
+                  child: twoCols
+                      ? GridView.builder(
+                          padding: AppSpacing.screenPadding,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 16,
+                            childAspectRatio: 4.2,
                           ),
-                          if (isFFA && _controllers.length > 2)
-                            IconButton(
-                              icon: const Icon(
-                                Icons.remove_circle_outline,
-                                color: AppColors.danger,
+                          itemCount: _controllers.length,
+                          itemBuilder: (context, index) {
+                            return _buildNameField(
+                              context,
+                              l10n,
+                              index,
+                              isFFA,
+                            );
+                          },
+                        )
+                      : ListView.builder(
+                          padding: AppSpacing.screenPadding,
+                          itemCount: _controllers.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _buildNameField(
+                                context,
+                                l10n,
+                                index,
+                                isFFA,
                               ),
-                              onPressed: () => _removePlayer(index),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
+                            );
+                          },
+                        ),
                 ),
-              ),
-              if (isFFA)
-                Padding(
-                  padding: AppSpacing.screenH,
-                  child: TextButton.icon(
-                    onPressed: _addPlayer,
-                    icon: const Icon(Icons.add, color: AppColors.textSecondary),
-                    label: Text(
-                      l10n.addPlayer,
-                      style: const TextStyle(
-                        fontFamily: AppFonts.family,
+                if (isFFA)
+                  Padding(
+                    padding: AppSpacing.screenH,
+                    child: TextButton.icon(
+                      onPressed: _addPlayer,
+                      icon: const Icon(
+                        Icons.add,
                         color: AppColors.textSecondary,
+                      ),
+                      label: Text(
+                        l10n.addPlayer,
+                        style: const TextStyle(
+                          fontFamily: AppFonts.family,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              Padding(
-                padding: AppSpacing.screenPadding,
-                child: SizedBox(
-                  width: double.infinity,
-                  height: AppSpacing.buttonHeight,
-                  child: ElevatedButton(
-                    onPressed: _canProceed
-                        ? () {
-                            final names = _controllers
-                                .map((c) => c.text.trim())
-                                .toList();
-                            context.read<GameProvider>().setPlayers(names);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CategorySelectionScreen(),
-                              ),
-                            );
-                          }
-                        : null,
-                    style: AppButtonStyles.primaryDisabled,
-                    child: Text(l10n.next),
+                Padding(
+                  padding: AppSpacing.screenPadding,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: AppSpacing.buttonHeight,
+                    child: ElevatedButton(
+                      onPressed: _canProceed
+                          ? () {
+                              final names = _controllers
+                                  .map((c) => c.text.trim())
+                                  .toList();
+                              context.read<GameProvider>().setPlayers(names);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const CategorySelectionScreen(),
+                                ),
+                              );
+                            }
+                          : null,
+                      style: AppButtonStyles.primaryDisabled,
+                      child: Text(l10n.next),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
