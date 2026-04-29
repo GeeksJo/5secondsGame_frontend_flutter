@@ -161,9 +161,6 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       tabletPortrait: 940,
       tabletLandscape: 1080,
     );
-    final startButtonHeight = isTablet
-        ? (AppSpacing.buttonHeightLg + 10.0)
-        : AppSpacing.buttonHeight;
     final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
 
     return Scaffold(
@@ -338,7 +335,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                     ),
                     child: SizedBox(
                       width: double.infinity,
-                      height: startButtonHeight,
+                      height: AppSpacing.buttonHeight(context),
                       child: ElevatedButton(
                         onPressed: _selected.isNotEmpty ? _onStart : null,
                         style: AppButtonStyles.primaryDisabled.merge(
@@ -346,7 +343,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                             textStyle: WidgetStateProperty.all(
                               TextStyle(
                                 fontFamily: AppFonts.family,
-                                fontSize: isTablet ? 22 : 18,
+                                fontSize: isTablet ? 30 : 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

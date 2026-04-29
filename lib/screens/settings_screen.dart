@@ -20,6 +20,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final localeProvider = context.watch<LocaleProvider>();
+    final isTablet = ResponsiveLayout.isTablet(context);
     final palette = GameKit.settingsUi != null
         ? GameKitSettingsPalette.fromUiConfig(GameKit.settingsUi!)
         : GameKitSettingsPalette.fromSeed(
@@ -36,9 +37,20 @@ class SettingsScreen extends StatelessWidget {
     );
     final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
 
+    final listPad = isTablet
+        ? const EdgeInsets.fromLTRB(12, 24, 12, 24)
+        : AppSpacing.screenPadding;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.settings),
+        title: Text(
+          l10n.settings,
+          style: TextStyle(
+            fontFamily: AppFonts.family,
+            fontSize: isTablet ? 30 : null,
+            fontWeight: isTablet ? FontWeight.w700 : null,
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -51,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
           child: ResponsiveLayout(
             maxWidth: maxW,
             child: ListView(
-              padding: AppSpacing.screenPadding,
+              padding: listPad,
               children: [
                 GameKitSettingSectionWidget(
                   palette: palette,
@@ -77,6 +89,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 SizedBox(height: _sectionSpacing),
                 _MoreGamesCard(
+                  isTablet: isTablet,
                   title: l10n.moreGames,
                   subtitle: l10n.moreGamesSubtitle,
                   onTap: () => showAppCrossPromoSheet(context),
@@ -95,6 +108,7 @@ class SettingsScreen extends StatelessWidget {
                     leading: Icon(
                       Icons.leaderboard_outlined,
                       color: AppColors.textSecondary,
+                      size: isTablet ? 32 : 24,
                     ),
                     title: Text(
                       'Preview results (debug)',
@@ -102,6 +116,7 @@ class SettingsScreen extends StatelessWidget {
                         fontFamily: AppFonts.family,
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
+                        fontSize: isTablet ? 22 : null,
                       ),
                     ),
                     subtitle: Text(
@@ -109,7 +124,7 @@ class SettingsScreen extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: AppFonts.family,
                         color: AppColors.textMuted,
-                        fontSize: 12,
+                        fontSize: isTablet ? 17 : 12,
                       ),
                     ),
                     onTap: () {
@@ -155,11 +170,13 @@ class SettingsScreen extends StatelessWidget {
 }
 
 class _MoreGamesCard extends StatelessWidget {
+  final bool isTablet;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
   const _MoreGamesCard({
+    required this.isTablet,
     required this.title,
     required this.subtitle,
     required this.onTap,
@@ -167,6 +184,15 @@ class _MoreGamesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleSize = isTablet ? 22.0 : 16.0;
+    final subtitleSize = isTablet ? 17.0 : 12.5;
+    final hPad = isTablet ? 22.0 : 16.0;
+    final vPad = isTablet ? 18.0 : 14.0;
+    final iconBox = isTablet ? 54.0 : 44.0;
+    final innerPad = isTablet ? 10.0 : 8.0;
+    final gap = isTablet ? 16.0 : 12.0;
+    final chevron = isTablet ? 32.0 : 26.0;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -179,12 +205,12 @@ class _MoreGamesCard extends StatelessWidget {
             border: Border.all(color: AppColors.cardBorder),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: iconBox,
+                  height: iconBox,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(
@@ -193,14 +219,14 @@ class _MoreGamesCard extends StatelessWidget {
                     border: Border.all(color: AppColors.cardBorder),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(innerPad),
                     child: Image.asset(
                       'assets/images/game_controller.png',
                       fit: BoxFit.contain,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: gap),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,33 +235,33 @@ class _MoreGamesCard extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppFonts.family,
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w800,
-                          fontSize: 16,
+                          fontSize: titleSize,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: isTablet ? 4 : 2),
                       Text(
                         subtitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppFonts.family,
                           color: AppColors.textMuted,
                           fontWeight: FontWeight.w500,
-                          fontSize: 12.5,
+                          fontSize: subtitleSize,
                           height: 1.25,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   color: AppColors.textSecondary,
-                  size: 26,
+                  size: chevron,
                 ),
               ],
             ),

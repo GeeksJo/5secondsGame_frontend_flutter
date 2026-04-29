@@ -52,10 +52,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           const Duration(seconds: 6),
           onTimeout: () {},
         );
-        await GameKitAdBridge.presentAfterLevel(failed: widget.adsRoundFailed).timeout(
-          const Duration(seconds: 55),
-          onTimeout: () {},
-        );
+        await GameKitAdBridge.presentAfterLevel(
+          failed: widget.adsRoundFailed,
+        ).timeout(const Duration(seconds: 55), onTimeout: () {});
         GameKit.haptics.milestoneSuccess();
       } finally {
         failSafe?.cancel();
@@ -68,8 +67,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final game = context.watch<GameProvider>();
-    final ranked =
-        widget.debugRankedPlayers ?? game.rankedPlayers;
+    final ranked = widget.debugRankedPlayers ?? game.rankedPlayers;
     final isTablet = ResponsiveLayout.isTablet(context);
     final landscape = ResponsiveLayout.isLandscape(context);
     final maxW = ResponsiveLayout.maxWidthFor(
@@ -99,7 +97,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 child: Icon(
                   Icons.emoji_events_rounded,
                   color: AppColors.coin,
-                  size: isTablet ? 40 : 32,
+                  size: isTablet ? 60 : 32,
                 ),
               ),
               const SizedBox(width: 16),
@@ -112,7 +110,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                       style: TextStyle(
                         fontFamily: AppFonts.family,
                         color: AppColors.textPrimary,
-                        fontSize: isTablet ? 28.0 : 22.0,
+                        fontSize: isTablet ? 40.0 : 22.0,
                         fontWeight: FontWeight.w800,
                         height: 1.1,
                       ),
@@ -123,7 +121,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                       style: TextStyle(
                         fontFamily: AppFonts.family,
                         color: AppColors.textMuted,
-                        fontSize: isTablet ? 14.0 : 12.0,
+                        fontSize: isTablet ? 20.0 : 12.0,
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.3,
                       ),
@@ -150,7 +148,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             child: Icon(
               Icons.emoji_events_rounded,
               color: AppColors.coin,
-              size: isTablet ? 44 : 36,
+              size: isTablet ? 66 : 36,
             ),
           ),
           SizedBox(height: isTablet ? 20 : 16),
@@ -159,7 +157,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             style: TextStyle(
               fontFamily: AppFonts.family,
               color: AppColors.textPrimary,
-              fontSize: isTablet ? 32.0 : 26.0,
+              fontSize: isTablet ? 50.0 : 26.0,
               fontWeight: FontWeight.w800,
               height: 1.1,
             ),
@@ -170,7 +168,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             style: TextStyle(
               fontFamily: AppFonts.family,
               color: AppColors.textMuted,
-              fontSize: isTablet ? 15.0 : 13.0,
+              fontSize: isTablet ? 25.0 : 13.0,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.3,
             ),
@@ -197,83 +195,86 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                     headerBlock(),
                     if (landscape) const SizedBox(height: 12),
                     Expanded(
-                    child: ListView.separated(
-                      padding: AppSpacing.screenH.copyWith(bottom: 8),
-                      itemCount: ranked.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        return PlayerScoreTile(
-                          player: ranked[index],
-                          rank: index + 1,
-                          isWinner: index == 0,
-                          isTablet: isTablet,
-                        );
-                      },
+                      child: ListView.separated(
+                        padding: AppSpacing.screenH.copyWith(bottom: 8),
+                        itemCount: ranked.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          return PlayerScoreTile(
+                            player: ranked[index],
+                            rank: index + 1,
+                            isWinner: index == 0,
+                            isTablet: isTablet,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: AppSpacing.screenPadding.copyWith(top: 8),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: AppSpacing.buttonHeight,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              game.resetGame();
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const CategorySelectionScreen(),
-                                ),
-                                (route) => route.isFirst,
-                              );
-                            },
-                            style: AppButtonStyles.primary,
-                            child: Text(l10n.playAgain),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: _adShowing
-                              ? null
-                              : () async {
-                                  final nav = Navigator.of(context);
-                                  setState(() => _adShowing = true);
-                                  try {
-                                    await GameKitAdBridge.presentOnAbandonHome();
-                                  } finally {
-                                    if (context.mounted) {
-                                      nav.pushAndRemoveUntil(
-                                        MaterialPageRoute(
-                                          builder: (_) => const HomeScreen(),
-                                        ),
-                                        (route) => false,
-                                      );
-                                    }
-                                  }
-                                },
-                          child: Text(
-                            l10n.home,
-                            style: TextStyle(
-                              fontFamily: AppFonts.family,
-                              color: AppColors.textSecondary,
-                              fontSize: isTablet ? 17.0 : 15.0,
-                              fontWeight: FontWeight.w600,
+                    Padding(
+                      padding: AppSpacing.screenPadding.copyWith(top: 8),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            height: AppSpacing.buttonHeight(context),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                game.resetGame();
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const CategorySelectionScreen(),
+                                  ),
+                                  (route) => route.isFirst,
+                                );
+                              },
+                              style: AppButtonStyles.primary,
+                              child: Text(
+                                l10n.playAgain,
+                                style: TextStyle(fontSize: isTablet ? 30 : 18),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: _adShowing
+                                ? null
+                                : () async {
+                                    final nav = Navigator.of(context);
+                                    setState(() => _adShowing = true);
+                                    try {
+                                      await GameKitAdBridge.presentOnAbandonHome();
+                                    } finally {
+                                      if (context.mounted) {
+                                        nav.pushAndRemoveUntil(
+                                          MaterialPageRoute(
+                                            builder: (_) => const HomeScreen(),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      }
+                                    }
+                                  },
+                            child: Text(
+                              l10n.home,
+                              style: TextStyle(
+                                fontFamily: AppFonts.family,
+                                color: AppColors.textSecondary,
+                                fontSize: isTablet ? 30.0 : 15.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
     );
   }
 }

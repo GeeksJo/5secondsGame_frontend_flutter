@@ -67,15 +67,11 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
               hintText: '${l10n.enterPlayerName} ${index + 1}',
-              hintStyle: const TextStyle(
-                color: AppColors.textHint,
-              ),
+              hintStyle: const TextStyle(color: AppColors.textHint),
               filled: true,
               fillColor: AppColors.cardFill,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(
-                  AppRadius.md,
-                ),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: BorderSide.none,
               ),
               contentPadding: const EdgeInsets.symmetric(
@@ -83,9 +79,7 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                 vertical: 14,
               ),
             ),
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-            ),
+            style: const TextStyle(color: AppColors.textPrimary),
           ),
         ),
         if (isFFA && _controllers.length > 2)
@@ -105,7 +99,8 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
     final l10n = AppLocalizations.of(context)!;
     final mode = context.watch<GameProvider>().mode;
     final isFFA = mode == GameMode.freeForAll;
-    final twoCols = ResponsiveLayout.isTablet(context) &&
+    final twoCols =
+        ResponsiveLayout.isTablet(context) &&
         ResponsiveLayout.isLandscape(context);
     final maxW = ResponsiveLayout.maxWidthFor(
       context,
@@ -137,19 +132,14 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                           padding: AppSpacing.screenPadding,
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 4.2,
-                          ),
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: 4.2,
+                              ),
                           itemCount: _controllers.length,
                           itemBuilder: (context, index) {
-                            return _buildNameField(
-                              context,
-                              l10n,
-                              index,
-                              isFFA,
-                            );
+                            return _buildNameField(context, l10n, index, isFFA);
                           },
                         )
                       : ListView.builder(
@@ -190,7 +180,7 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                   padding: AppSpacing.screenPadding,
                   child: SizedBox(
                     width: double.infinity,
-                    height: AppSpacing.buttonHeight,
+                    height: AppSpacing.buttonHeight(context),
                     child: ElevatedButton(
                       onPressed: _canProceed
                           ? () {

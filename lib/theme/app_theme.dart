@@ -53,7 +53,8 @@ abstract class AppSpacing {
   static const screenPadding = EdgeInsets.all(24.0);
   static const screenH = EdgeInsets.symmetric(horizontal: 24.0);
   static const cardPadding = EdgeInsets.all(16.0);
-  static const buttonHeight = 52.0;
+  static double buttonHeight(BuildContext context) =>
+      ResponsiveLayout.isTablet(context) ? 72.0 : 52.0;
   static const buttonHeightLg = 56.0;
 }
 
