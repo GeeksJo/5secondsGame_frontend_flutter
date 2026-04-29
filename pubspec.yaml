@@ -19,11 +19,13 @@ dependencies:
   intl: ^0.20.2
   url_launcher: ^6.3.1
   flutter_dotenv: ^5.2.1
+  # game_kit:
+  #   git:
+  #     url: https://github.com/GeeksJo/gameKit_package_flutter.git
+  #     ref: development
   game_kit:
-    git:
-      url: https://github.com/GeeksJo/gameKit_package_flutter.git
-      ref: development
-
+    path: /Users/mohammedadel/Work/FlutterProjects/words_crash_and_game_kit/gamekit_package
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
