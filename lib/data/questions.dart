@@ -47,14 +47,12 @@ class QuestionBank {
     List<Question> matchingUnused() => _allQuestions
         .where(
           (q) =>
-              categoryKeys.contains(q.category) &&
-              !_usedQuestions.contains(q),
+              categoryKeys.contains(q.category) && !_usedQuestions.contains(q),
         )
         .toList();
 
-    List<Question> anyUnused() => _allQuestions
-        .where((q) => !_usedQuestions.contains(q))
-        .toList();
+    List<Question> anyUnused() =>
+        _allQuestions.where((q) => !_usedQuestions.contains(q)).toList();
 
     var pool = matchingUnused();
     if (pool.isEmpty && _usedQuestions.isNotEmpty) {

@@ -1,12 +1,15 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 
 import '../providers/locale_provider.dart';
+import '../debug/scoreboard_screen_test_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_cross_promo.dart';
 import '../widgets/responsive_layout.dart';
+import 'scoreboard_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -76,6 +79,41 @@ class SettingsScreen extends StatelessWidget {
                 sectionSpacing: _sectionSpacing,
                 maxWidth: double.infinity,
               ),
+              if (kDebugMode) ...[
+                SizedBox(height: _sectionSpacing),
+                ListTile(
+                  leading: Icon(
+                    Icons.leaderboard_outlined,
+                    color: AppColors.textSecondary,
+                  ),
+                  title: Text(
+                    'Preview results (debug)',
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Scoreboard test data',
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ScoreboardScreen(
+                          debugRankedPlayers:
+                              ScoreboardScreenTestData.rankedPlayersFixture(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),

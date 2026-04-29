@@ -154,7 +154,7 @@ class HomeScreen extends StatelessWidget {
                                               .read<GameProvider>()
                                               .setPlayers(
                                                 isArabic
-                                                    ? const ['لاعب ١', 'لاعب ٢']
+                                                    ? const ['أنا', 'أنت']
                                                     : const [
                                                         'Player 1',
                                                         'Player 2',

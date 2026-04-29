@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:game_kit/game_kit.dart';
 import 'dart:async';
 
+import '../models/player.dart';
 import '../providers/game_provider.dart';
 import '../services/game_kit_bootstrap.dart';
 import '../theme/app_theme.dart';
@@ -13,10 +15,17 @@ import 'category_selection_screen.dart';
 import 'home_screen.dart';
 
 class ScoreboardScreen extends StatefulWidget {
-  const ScoreboardScreen({super.key, this.adsRoundFailed = false});
+  const ScoreboardScreen({
+    super.key,
+    this.adsRoundFailed = false,
+    this.debugRankedPlayers,
+  }) : assert(debugRankedPlayers == null || kDebugMode);
 
   /// When true, the match ended after a timed-out round (vs a successful tap).
   final bool adsRoundFailed;
+
+  /// Debug-only: pre-sorted ranking list (highest score first). Skips GameKit work on open.
+  final List<Player>? debugRankedPlayers;
 
   @override
   State<ScoreboardScreen> createState() => _ScoreboardScreenState();
@@ -28,6 +37,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.debugRankedPlayers != null) {
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       setState(() => _adShowing = true);
@@ -56,7 +68,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final game = context.watch<GameProvider>();
-    final ranked = game.rankedPlayers;
+    final ranked =
+        widget.debugRankedPlayers ?? game.rankedPlayers;
     final isTablet = ResponsiveLayout.isTablet(context);
 
     return PopScope(
