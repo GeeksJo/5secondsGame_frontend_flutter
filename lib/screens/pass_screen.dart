@@ -35,13 +35,15 @@ class _PassScreenState extends State<PassScreen>
       _flipController.value = game.isFlipped ? 0.0 : 1.0;
       Future.delayed(const Duration(milliseconds: 220), () {
         if (!mounted) return;
-        _flipController.animateTo(
-          game.isFlipped ? 1.0 : 0.0,
-          curve: Curves.easeInOutCubic,
-        ).then((_) {
-          if (!mounted) return;
-          Future.delayed(const Duration(milliseconds: 220), _goToNextQuestion);
-        });
+        _flipController
+            .animateTo(game.isFlipped ? 1.0 : 0.0, curve: Curves.easeInOutCubic)
+            .then((_) {
+              if (!mounted) return;
+              Future.delayed(
+                const Duration(milliseconds: 220),
+                _goToNextQuestion,
+              );
+            });
       });
     }
   }
@@ -97,8 +99,8 @@ class _PassScreenState extends State<PassScreen>
     final isTablet = ResponsiveLayout.isTablet(context);
     final compact = ResponsiveLayout.isCompactHeight(context);
     final scale = compact ? 0.88 : 1.0;
-    final iconSize = (isTablet ? 80.0 : 64.0) * scale;
-    final nameSize = (isTablet ? 44.0 : 36.0) * scale;
+    final iconSize = (isTablet ? 120.0 : 64.0) * scale;
+    final nameSize = (isTablet ? 80.0 : 36.0) * scale;
     final maxW = ResponsiveLayout.maxWidthFor(
       context,
       phone: 600,
@@ -141,8 +143,7 @@ class _PassScreenState extends State<PassScreen>
                                 l10n.passTo,
                                 style: TextStyle(
                                   color: AppColors.textMuted,
-                                  fontSize:
-                                      (isTablet ? 22.0 : 18.0) * scale,
+                                  fontSize: (isTablet ? 30.0 : 18.0) * scale,
                                 ),
                               ),
                               SizedBox(height: 8 * scale),
@@ -166,8 +167,7 @@ class _PassScreenState extends State<PassScreen>
                                 style: TextStyle(
                                   fontFamily: AppFonts.family,
                                   color: AppColors.textHint,
-                                  fontSize:
-                                      (isTablet ? 18.0 : 14.0) * scale,
+                                  fontSize: (isTablet ? 30.0 : 14.0) * scale,
                                 ),
                               ),
                             ],

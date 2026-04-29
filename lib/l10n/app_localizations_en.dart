@@ -152,6 +152,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectAtLeastOne => 'Select at least one category';
 
   @override
+  String get noPlayersSet =>
+      'Add players from the home screen before starting.';
+
+  @override
   String get player => 'Player';
 
   @override

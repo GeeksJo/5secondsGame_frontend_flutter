@@ -130,6 +130,12 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
   void _onStart() {
     final game = context.read<GameProvider>();
+    if (game.players.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.noPlayersSet)),
+      );
+      return;
+    }
     game.setTotalRounds(_selectedRounds);
     game.setCategories(_selected.toList());
     game.startGame();
@@ -353,6 +359,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                           _selected.isEmpty
                               ? l10n.selectAtLeastOne
                               : l10n.start,
+                          style: TextStyle(fontSize: isTablet ? 30 : 18),
                         ),
                       ),
                     ),

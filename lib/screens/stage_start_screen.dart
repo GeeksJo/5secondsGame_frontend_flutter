@@ -11,6 +11,7 @@ import '../providers/game_provider.dart';
 import '../providers/locale_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/responsive_layout.dart';
+import 'home_screen.dart';
 import 'question_screen.dart';
 
 /// Full-screen countdown after categories + Start (same layout for 1v1 and FFA;
@@ -83,6 +84,15 @@ class _StageStartScreenState extends State<StageStartScreen>
   void _onComplete() {
     HapticFeedback.mediumImpact();
     if (!mounted) return;
+    final game = context.read<GameProvider>();
+    if (game.players.isEmpty) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+      return;
+    }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const QuestionScreen()),

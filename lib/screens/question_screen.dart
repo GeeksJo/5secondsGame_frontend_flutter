@@ -408,86 +408,9 @@ class _QuestionScreenState extends State<QuestionScreen>
     required bool redEnabled,
     required VoidCallback onDone,
   }) {
-    final useWide = ResponsiveLayout.useWideGameLayout(context);
     final timerD = _timerDiameter(context);
     final redBase = ResponsiveLayout.redButtonDiameter(context);
     final redD = isTablet ? redBase + 36.0 : redBase;
-
-    if (useWide) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildHeaderRow(
-            l10n: l10n,
-            isTablet: isTablet,
-            centerName: headerName,
-            onPause: onPause,
-            onRemoveAds: onRemoveAds,
-          ),
-          _buildRoundLine(l10n, game, isTablet),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 8, 0),
-                    child: Column(
-                      children: [
-                        if (is1v1 && game.players.length == 2)
-                          _build1v1Scoreboard(game, isTablet)
-                        else
-                          const SizedBox(height: 6),
-                        Expanded(
-                          child: Center(
-                            child: _buildCountdownBlock(
-                              l10n,
-                              isTablet,
-                              introTotalBeats,
-                              timerD,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 12, 0),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: SingleChildScrollView(
-                              child: _buildQuestionPanel(
-                                isTablet: isTablet,
-                                text: questionText,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Center(
-                          child: RedButton(
-                            label: l10n.done,
-                            enabled: redEnabled,
-                            onPressed: onDone,
-                            diameter: redD,
-                          ),
-                        ),
-                        _buildBannerSlot(),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
 
     return Column(
       children: [
@@ -817,6 +740,28 @@ class _QuestionScreenState extends State<QuestionScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final game = context.watch<GameProvider>();
+
+    if (game.players.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+        );
+      });
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          body: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: AppDecorations.gradientBg,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+        ),
+      );
+    }
+
     final locale = context.watch<LocaleProvider>().locale.languageCode;
     final question = game.currentQuestion;
     final isTablet = ResponsiveLayout.isTablet(context);

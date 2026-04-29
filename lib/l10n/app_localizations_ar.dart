@@ -151,6 +151,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectAtLeastOne => 'اختر فئة واحدة على الأقل';
 
   @override
+  String get noPlayersSet => 'أضف اللاعبين من الشاشة الرئيسية قبل البدء.';
+
+  @override
   String get player => 'لاعب';
 
   @override

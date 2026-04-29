@@ -59,6 +59,8 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
     int index,
     bool isFFA,
   ) {
+    bool isTablet = ResponsiveLayout.isTablet(context);
+    final nameSize = isTablet ? 30.0 : 18.0;
     return Row(
       children: [
         Expanded(
@@ -79,14 +81,15 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                 vertical: 14,
               ),
             ),
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: TextStyle(color: AppColors.textPrimary, fontSize: nameSize),
           ),
         ),
         if (isFFA && _controllers.length > 2)
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.remove_circle_outline,
               color: AppColors.danger,
+              size: isTablet ? 40 : 28,
             ),
             onPressed: () => _removePlayer(index),
           ),
@@ -109,7 +112,7 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
       tabletLandscape: 920,
     );
     final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
-
+    final isTablet = ResponsiveLayout.isTablet(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.playerSetup),
@@ -163,13 +166,15 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                     padding: AppSpacing.screenH,
                     child: TextButton.icon(
                       onPressed: _addPlayer,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.add,
                         color: AppColors.textSecondary,
+                        size: isTablet ? 40 : 28,
                       ),
                       label: Text(
                         l10n.addPlayer,
-                        style: const TextStyle(
+                        style: TextStyle(
+                          fontSize: isTablet ? 30 : 18,
                           fontFamily: AppFonts.family,
                           color: AppColors.textSecondary,
                         ),
@@ -198,7 +203,10 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                             }
                           : null,
                       style: AppButtonStyles.primaryDisabled,
-                      child: Text(l10n.next),
+                      child: Text(
+                        l10n.next,
+                        style: TextStyle(fontSize: isTablet ? 30 : 18),
+                      ),
                     ),
                   ),
                 ),

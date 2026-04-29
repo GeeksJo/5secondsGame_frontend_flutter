@@ -47,6 +47,7 @@
   "unlocked": "Unlocked",
   "notEnoughCoins": "Not enough coins",
   "selectAtLeastOne": "Select at least one category",
+  "noPlayersSet": "Add players from the home screen before starting.",
   "player": "Player",
   "round": "Round",
   "score": "Score",

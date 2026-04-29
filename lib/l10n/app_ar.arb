@@ -47,6 +47,7 @@
   "unlocked": "مفتوح",
   "notEnoughCoins": "لا تملك عملات كافية",
   "selectAtLeastOne": "اختر فئة واحدة على الأقل",
+  "noPlayersSet": "أضف اللاعبين من الشاشة الرئيسية قبل البدء.",
   "player": "لاعب",
   "round": "جولة",
   "score": "النقاط",
