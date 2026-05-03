@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../providers/coin_provider.dart';
 import '../theme/app_theme.dart';
+import 'responsive_layout.dart';
 
 class LockedCategorySheet extends StatelessWidget {
   final GameCategory category;
@@ -15,9 +16,17 @@ class LockedCategorySheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final coinProvider = context.watch<CoinProvider>();
+    final isTablet = ResponsiveLayout.isTablet(context);
+    final sheetPad = isTablet
+        ? const EdgeInsets.symmetric(horizontal: 28, vertical: 28)
+        : AppSpacing.screenPadding;
+    final titleSize = isTablet ? 26.0 : 22.0;
+    final iconTop = isTablet ? 56.0 : 48.0;
+    final coinsSize = isTablet ? 17.0 : 14.0;
+    final coinIcon = isTablet ? 22.0 : 18.0;
 
     return Container(
-      padding: AppSpacing.screenPadding,
+      padding: sheetPad,
       decoration: AppDecorations.bottomSheet,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -30,32 +39,38 @@ class LockedCategorySheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 20),
-          Icon(category.icon, color: category.color, size: 48),
-          const SizedBox(height: 8),
+          SizedBox(height: isTablet ? 24 : 20),
+          Icon(category.icon, color: category.color, size: iconTop),
+          SizedBox(height: isTablet ? 10 : 8),
           Text(
             category.name(Localizations.localeOf(context).languageCode),
-            style: const TextStyle(
+            style: TextStyle(
+              fontFamily: AppFonts.family,
               color: AppColors.textPrimary,
-              fontSize: 22,
+              fontSize: titleSize,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: isTablet ? 6 : 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.monetization_on, color: AppColors.coin, size: 18),
+              Icon(Icons.monetization_on, color: AppColors.coin, size: coinIcon),
               const SizedBox(width: 4),
               Text(
                 '${coinProvider.coins} ${l10n.coins}',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: TextStyle(
+                  fontFamily: AppFonts.family,
+                  color: AppColors.textSecondary,
+                  fontSize: coinsSize,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isTablet ? 28 : 24),
           _buildOption(
             context,
+            isTablet: isTablet,
             icon: Icons.timer,
             label: l10n.rentFor2Hours,
             cost: '${CoinProvider.rentCost}',
@@ -67,9 +82,10 @@ class LockedCategorySheet extends StatelessWidget {
               }
             },
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isTablet ? 14 : 12),
           _buildOption(
             context,
+            isTablet: isTablet,
             icon: Icons.star,
             label: l10n.buyForever,
             cost: '${CoinProvider.buyCost}',
@@ -81,9 +97,10 @@ class LockedCategorySheet extends StatelessWidget {
               }
             },
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isTablet ? 14 : 12),
           _buildOption(
             context,
+            isTablet: isTablet,
             icon: Icons.play_circle_fill,
             label: '${l10n.watchAd} — ${l10n.earnCoins}',
             cost: '+${CoinProvider.adReward}',
@@ -103,7 +120,7 @@ class LockedCategorySheet extends StatelessWidget {
               await coinProvider.watchAdForCoins();
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isTablet ? 20 : 16),
         ],
       ),
     );
@@ -111,6 +128,7 @@ class LockedCategorySheet extends StatelessWidget {
 
   Widget _buildOption(
     BuildContext context, {
+    required bool isTablet,
     required IconData icon,
     required String label,
     required String cost,
@@ -118,29 +136,40 @@ class LockedCategorySheet extends StatelessWidget {
     required VoidCallback onTap,
     bool isAd = false,
   }) {
+    final optPadH = isTablet ? 20.0 : 16.0;
+    final optPadV = isTablet ? 18.0 : 14.0;
+    final leadIcon = isTablet ? 28.0 : 24.0;
+    final labelSize = isTablet ? 18.0 : 15.0;
+    final trailIcon = isTablet ? 22.0 : 18.0;
+    final costSize = isTablet ? 18.0 : 15.0;
+
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: EdgeInsets.symmetric(horizontal: optPadH, vertical: optPadV),
         decoration: BoxDecoration(
           color: enabled ? AppColors.cardFill : AppColors.textPrimary.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(isTablet ? AppRadius.lg : AppRadius.md),
           border: Border.all(
             color: enabled ? AppColors.cardBorder : AppColors.cardFill,
           ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: enabled ? AppColors.textPrimary : AppColors.textHint, size: 24),
-            const SizedBox(width: 12),
+            Icon(
+              icon,
+              color: enabled ? AppColors.textPrimary : AppColors.textHint,
+              size: leadIcon,
+            ),
+            SizedBox(width: isTablet ? 14 : 12),
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
                   fontFamily: AppFonts.family,
                   color: enabled ? AppColors.textPrimary : AppColors.textHint,
-                  fontSize: 15,
+                  fontSize: labelSize,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -153,7 +182,7 @@ class LockedCategorySheet extends StatelessWidget {
                   color: isAd
                       ? (enabled ? AppColors.correct : AppColors.textHint)
                       : AppColors.coin,
-                  size: 18,
+                  size: trailIcon,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -162,7 +191,7 @@ class LockedCategorySheet extends StatelessWidget {
                     fontFamily: AppFonts.family,
                     color: enabled ? AppColors.textPrimary : AppColors.textHint,
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: costSize,
                   ),
                 ),
               ],

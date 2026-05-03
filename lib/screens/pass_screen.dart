@@ -35,13 +35,15 @@ class _PassScreenState extends State<PassScreen>
       _flipController.value = game.isFlipped ? 0.0 : 1.0;
       Future.delayed(const Duration(milliseconds: 220), () {
         if (!mounted) return;
-        _flipController.animateTo(
-          game.isFlipped ? 1.0 : 0.0,
-          curve: Curves.easeInOutCubic,
-        ).then((_) {
-          if (!mounted) return;
-          Future.delayed(const Duration(milliseconds: 220), _goToNextQuestion);
-        });
+        _flipController
+            .animateTo(game.isFlipped ? 1.0 : 0.0, curve: Curves.easeInOutCubic)
+            .then((_) {
+              if (!mounted) return;
+              Future.delayed(
+                const Duration(milliseconds: 220),
+                _goToNextQuestion,
+              );
+            });
       });
     }
   }
@@ -95,6 +97,18 @@ class _PassScreenState extends State<PassScreen>
 
     final l10n = AppLocalizations.of(context)!;
     final isTablet = ResponsiveLayout.isTablet(context);
+    final compact = ResponsiveLayout.isCompactHeight(context);
+    final scale = compact ? 0.88 : 1.0;
+    final iconSize = (isTablet ? 120.0 : 64.0) * scale;
+    final nameSize = (isTablet ? 80.0 : 36.0) * scale;
+    final maxW = ResponsiveLayout.maxWidthFor(
+      context,
+      phone: 600,
+      tabletPortrait: 720,
+      tabletLandscape: 880,
+    );
+    final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -105,40 +119,63 @@ class _PassScreenState extends State<PassScreen>
             height: double.infinity,
             decoration: AppDecorations.gradientBg,
             child: SafeArea(
-              child: ResponsiveLayout(
-                maxWidth: 600,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.phone_android, color: AppColors.textMuted,
-                        size: isTablet ? 80 : 64),
-                    const SizedBox(height: 24),
-                    Text(
-                      l10n.passTo,
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: isTablet ? 22.0 : 18.0,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      game.currentPlayer.name,
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: isTablet ? 44.0 : 36.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      l10n.tapToContinue,
-                      style: TextStyle(
-                        fontFamily: AppFonts.family,
-                        color: AppColors.textHint,
-                        fontSize: isTablet ? 18.0 : 14.0,
-                      ),
-                    ),
-                  ],
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: hPad),
+                child: ResponsiveLayout(
+                  maxWidth: maxW,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.phone_android,
+                                color: AppColors.textMuted,
+                                size: iconSize,
+                              ),
+                              SizedBox(height: 24 * scale),
+                              Text(
+                                l10n.passTo,
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: (isTablet ? 30.0 : 18.0) * scale,
+                                ),
+                              ),
+                              SizedBox(height: 8 * scale),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                child: Text(
+                                  game.currentPlayer.name,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: nameSize,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 32 * scale),
+                              Text(
+                                l10n.tapToContinue,
+                                style: TextStyle(
+                                  fontFamily: AppFonts.family,
+                                  color: AppColors.textHint,
+                                  fontSize: (isTablet ? 30.0 : 14.0) * scale,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

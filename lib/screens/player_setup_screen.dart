@@ -53,12 +53,66 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
     });
   }
 
+  Widget _buildNameField(
+    BuildContext context,
+    AppLocalizations l10n,
+    int index,
+    bool isFFA,
+  ) {
+    bool isTablet = ResponsiveLayout.isTablet(context);
+    final nameSize = isTablet ? 30.0 : 18.0;
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _controllers[index],
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              hintText: '${l10n.enterPlayerName} ${index + 1}',
+              hintStyle: const TextStyle(color: AppColors.textHint),
+              filled: true,
+              fillColor: AppColors.cardFill,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+            style: TextStyle(color: AppColors.textPrimary, fontSize: nameSize),
+          ),
+        ),
+        if (isFFA && _controllers.length > 2)
+          IconButton(
+            icon: Icon(
+              Icons.remove_circle_outline,
+              color: AppColors.danger,
+              size: isTablet ? 40 : 28,
+            ),
+            onPressed: () => _removePlayer(index),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final mode = context.watch<GameProvider>().mode;
     final isFFA = mode == GameMode.freeForAll;
-
+    final twoCols =
+        ResponsiveLayout.isTablet(context) &&
+        ResponsiveLayout.isLandscape(context);
+    final maxW = ResponsiveLayout.maxWidthFor(
+      context,
+      phone: 520,
+      tabletPortrait: 680,
+      tabletLandscape: 920,
+    );
+    final hPad = ResponsiveLayout.tabletContentHorizontalInset(context);
+    final isTablet = ResponsiveLayout.isTablet(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.playerSetup),
@@ -69,102 +123,95 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
         width: double.infinity,
         height: double.infinity,
         decoration: AppDecorations.gradientBg,
-        child: ResponsiveLayout(
-          maxWidth: 500,
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: AppSpacing.screenPadding,
-                  itemCount: _controllers.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _controllers[index],
-                              onChanged: (_) => setState(() {}),
-                              decoration: InputDecoration(
-                                hintText:
-                                    '${l10n.enterPlayerName} ${index + 1}',
-                                hintStyle: const TextStyle(
-                                  color: AppColors.textHint,
-                                ),
-                                filled: true,
-                                fillColor: AppColors.cardFill,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadius.md,
-                                  ),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: hPad),
+          child: ResponsiveLayout(
+            maxWidth: maxW,
+            child: Column(
+              children: [
+                Expanded(
+                  child: twoCols
+                      ? GridView.builder(
+                          padding: AppSpacing.screenPadding,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: 4.2,
                               ),
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
+                          itemCount: _controllers.length,
+                          itemBuilder: (context, index) {
+                            return _buildNameField(context, l10n, index, isFFA);
+                          },
+                        )
+                      : ListView.builder(
+                          padding: AppSpacing.screenPadding,
+                          itemCount: _controllers.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _buildNameField(
+                                context,
+                                l10n,
+                                index,
+                                isFFA,
                               ),
-                            ),
-                          ),
-                          if (isFFA && _controllers.length > 2)
-                            IconButton(
-                              icon: const Icon(
-                                Icons.remove_circle_outline,
-                                color: AppColors.danger,
-                              ),
-                              onPressed: () => _removePlayer(index),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
+                            );
+                          },
+                        ),
                 ),
-              ),
-              if (isFFA)
-                Padding(
-                  padding: AppSpacing.screenH,
-                  child: TextButton.icon(
-                    onPressed: _addPlayer,
-                    icon: const Icon(Icons.add, color: AppColors.textSecondary),
-                    label: Text(
-                      l10n.addPlayer,
-                      style: const TextStyle(
-                        fontFamily: AppFonts.family,
+                if (isFFA)
+                  Padding(
+                    padding: AppSpacing.screenH,
+                    child: TextButton.icon(
+                      onPressed: _addPlayer,
+                      icon: Icon(
+                        Icons.add,
                         color: AppColors.textSecondary,
+                        size: isTablet ? 40 : 28,
+                      ),
+                      label: Text(
+                        l10n.addPlayer,
+                        style: TextStyle(
+                          fontSize: isTablet ? 30 : 18,
+                          fontFamily: AppFonts.family,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                Padding(
+                  padding: AppSpacing.screenPadding,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: AppSpacing.buttonHeight(context),
+                    child: ElevatedButton(
+                      onPressed: _canProceed
+                          ? () {
+                              final names = _controllers
+                                  .map((c) => c.text.trim())
+                                  .toList();
+                              context.read<GameProvider>().setPlayers(names);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const CategorySelectionScreen(),
+                                ),
+                              );
+                            }
+                          : null,
+                      style: AppButtonStyles.primaryDisabled,
+                      child: Text(
+                        l10n.next,
+                        style: TextStyle(fontSize: isTablet ? 30 : 18),
                       ),
                     ),
                   ),
                 ),
-              Padding(
-                padding: AppSpacing.screenPadding,
-                child: SizedBox(
-                  width: double.infinity,
-                  height: AppSpacing.buttonHeight,
-                  child: ElevatedButton(
-                    onPressed: _canProceed
-                        ? () {
-                            final names = _controllers
-                                .map((c) => c.text.trim())
-                                .toList();
-                            context.read<GameProvider>().setPlayers(names);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CategorySelectionScreen(),
-                              ),
-                            );
-                          }
-                        : null,
-                    style: AppButtonStyles.primaryDisabled,
-                    child: Text(l10n.next),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

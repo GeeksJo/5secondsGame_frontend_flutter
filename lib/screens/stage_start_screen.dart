@@ -11,6 +11,7 @@ import '../providers/game_provider.dart';
 import '../providers/locale_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/responsive_layout.dart';
+import 'home_screen.dart';
 import 'question_screen.dart';
 
 /// Full-screen countdown after categories + Start (same layout for 1v1 and FFA;
@@ -83,6 +84,15 @@ class _StageStartScreenState extends State<StageStartScreen>
   void _onComplete() {
     HapticFeedback.mediumImpact();
     if (!mounted) return;
+    final game = context.read<GameProvider>();
+    if (game.players.isEmpty) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+      return;
+    }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const QuestionScreen()),
@@ -94,9 +104,9 @@ class _StageStartScreenState extends State<StageStartScreen>
     final l10n = AppLocalizations.of(context)!;
     final game = context.watch<GameProvider>();
     final isTablet = ResponsiveLayout.isTablet(context);
-    final titleSize = isTablet ? 40.0 : 28.0;
-    final digitSize = isTablet ? 96.0 : 78.0;
-    final ring = isTablet ? 152.0 : 128.0;
+    final baseTitle = isTablet ? 60.0 : 28.0;
+    final baseDigit = isTablet ? 96.0 : 78.0;
+    final baseRing = isTablet ? 152.0 : 128.0;
 
     return PopScope(
       canPop: false,
@@ -106,111 +116,150 @@ class _StageStartScreenState extends State<StageStartScreen>
           height: double.infinity,
           decoration: AppDecorations.gradientBg,
           child: SafeArea(
-            child: ResponsiveLayout(
-              maxWidth: 560,
-              child: Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.identity()
-                  ..rotateZ(game.isFlipped ? math.pi : 0.0),
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, _) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        children: [
-                          SizedBox(height: isTablet ? 36 : 24),
-                          Text(
-                            l10n.stageStartsIn,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: AppFonts.family,
-                              fontSize: titleSize,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textPrimary,
-                              height: 1.05,
-                              shadows: [
-                                Shadow(
-                                  color: AppColors.primaryDeep
-                                      .withValues(alpha: 0.95),
-                                  offset: const Offset(0, 3),
-                                  blurRadius: 0,
-                                ),
-                                Shadow(
-                                  color: AppColors.danger
-                                      .withValues(alpha: 0.88),
-                                  offset: const Offset(0, 5),
-                                  blurRadius: 12,
-                                ),
-                                Shadow(
-                                  color: Colors.black
-                                      .withValues(alpha: 0.45),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 8,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(flex: 2),
-                          SizedBox(
-                            width: ring,
-                            height: ring,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: ring,
-                                  height: ring,
-                                  child: CircularProgressIndicator(
-                                    value: _controller.value.clamp(0.0, 1.0),
-                                    strokeWidth: 7,
-                                    strokeCap: StrokeCap.round,
-                                    backgroundColor: AppColors.cardBorder,
-                                    valueColor: const AlwaysStoppedAnimation(
-                                      AppColors.coin,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final h = constraints.maxHeight;
+                final compact =
+                    ResponsiveLayout.isCompactHeight(context) || h < 460;
+                final scale = compact ? (h / 520).clamp(0.52, 1.0) : 1.0;
+                final titleSize = baseTitle * scale;
+                final digitSize = baseDigit * scale;
+                final ring = baseRing * scale;
+
+                return ResponsiveLayout(
+                  maxWidth: ResponsiveLayout.maxWidthFor(
+                    context,
+                    phone: 560,
+                    tabletPortrait: 680,
+                    tabletLandscape: 800,
+                  ),
+                  child: SingleChildScrollView(
+                    physics: compact
+                        ? const BouncingScrollPhysics()
+                        : const ClampingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: h),
+                      child: Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..rotateZ(game.isFlipped ? math.pi : 0.0),
+                        child: AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, _) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(height: isTablet ? 20 : 12),
+                                  Text(
+                                    l10n.stageStartsIn,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: AppFonts.family,
+                                      fontSize: titleSize,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.textPrimary,
+                                      height: 1.05,
+                                      shadows: [
+                                        Shadow(
+                                          color: AppColors.primaryDeep
+                                              .withValues(alpha: 0.95),
+                                          offset: const Offset(0, 3),
+                                          blurRadius: 0,
+                                        ),
+                                        Shadow(
+                                          color: AppColors.danger.withValues(
+                                            alpha: 0.88,
+                                          ),
+                                          offset: const Offset(0, 5),
+                                          blurRadius: 12,
+                                        ),
+                                        Shadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.45,
+                                          ),
+                                          offset: const Offset(0, 2),
+                                          blurRadius: 8,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  '$_displayNumber',
-                                  style: TextStyle(
-                                    fontFamily: AppFonts.family,
-                                    color: AppColors.textPrimary,
-                                    fontSize: digitSize,
-                                    fontWeight: FontWeight.w900,
-                                    height: 1,
-                                    shadows: [
-                                      Shadow(
-                                        color: AppColors.primaryDeep
-                                            .withValues(alpha: 0.55),
-                                        offset: const Offset(0, 4),
-                                        blurRadius: 10,
-                                      ),
-                                    ],
+                                  SizedBox(height: compact ? 16 : 28),
+                                  SizedBox(
+                                    width: ring,
+                                    height: ring,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: ring,
+                                          height: ring,
+                                          child: CircularProgressIndicator(
+                                            value: _controller.value.clamp(
+                                              0.0,
+                                              1.0,
+                                            ),
+                                            strokeWidth: (7 * scale).clamp(
+                                              4.0,
+                                              8.0,
+                                            ),
+                                            strokeCap: StrokeCap.round,
+                                            backgroundColor:
+                                                AppColors.cardBorder,
+                                            valueColor:
+                                                const AlwaysStoppedAnimation(
+                                                  AppColors.coin,
+                                                ),
+                                          ),
+                                        ),
+                                        Text(
+                                          '$_displayNumber',
+                                          style: TextStyle(
+                                            fontFamily: AppFonts.family,
+                                            color: AppColors.textPrimary,
+                                            fontSize: digitSize,
+                                            fontWeight: FontWeight.w900,
+                                            height: 1,
+                                            shadows: [
+                                              Shadow(
+                                                color: AppColors.primaryDeep
+                                                    .withValues(alpha: 0.55),
+                                                offset: const Offset(0, 4),
+                                                blurRadius: 10,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(flex: 3),
-                          Text(
-                            l10n.stageStartsFootnote,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: AppFonts.family,
-                              color: AppColors.textSecondary,
-                              fontSize: isTablet ? 16.0 : 14.0,
-                              fontWeight: FontWeight.w600,
-                              height: 1.35,
-                            ),
-                          ),
-                          SizedBox(height: isTablet ? 28 : 20),
-                        ],
+                                  SizedBox(height: compact ? 16 : 32),
+                                  Text(
+                                    l10n.stageStartsFootnote,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: AppFonts.family,
+                                      color: AppColors.textSecondary,
+                                      fontSize:
+                                          (isTablet ? 30.0 : 14.0) * scale,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                  SizedBox(height: isTablet ? 20 : 16),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    );
-                  },
-                ),
-              ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),

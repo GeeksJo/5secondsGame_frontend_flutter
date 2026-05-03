@@ -7,12 +7,18 @@ class CountdownTimer extends StatelessWidget {
   final bool isIntro;
   final double diameter;
 
+  /// When null, uses 8 (intro) / 7 (answer). Larger reads better on tablet.
+  final double? introRingStrokeWidth;
+  final double? answerRingStrokeWidth;
+
   const CountdownTimer({
     super.key,
     required this.progress,
     required this.secondsLeft,
     this.isIntro = false,
     this.diameter = 120,
+    this.introRingStrokeWidth,
+    this.answerRingStrokeWidth,
   });
 
   @override
@@ -24,7 +30,9 @@ class CountdownTimer extends StatelessWidget {
       color = secondsLeft <= 2 ? AppColors.danger : AppColors.textPrimary;
     }
     final fontSize = isIntro ? diameter * 0.4 : diameter * 0.36;
-    final stroke = isIntro ? 8.0 : 7.0;
+    final stroke = isIntro
+        ? (introRingStrokeWidth ?? 8.0)
+        : (answerRingStrokeWidth ?? 7.0);
     final ring = diameter * 0.92;
 
     return SizedBox(
@@ -49,7 +57,7 @@ class CountdownTimer extends StatelessWidget {
             style: TextStyle(
               fontFamily: AppFonts.family,
               color: color,
-              fontSize: fontSize.clamp(32, 52),
+              fontSize: fontSize.clamp(32, 68),
               fontWeight: FontWeight.w800,
               height: 1,
               shadows: isIntro

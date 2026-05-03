@@ -18,9 +18,9 @@ class PlayerScoreTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nameSize = isTablet ? 18.0 : 16.0;
-    final scoreSize = isTablet ? 26.0 : 22.0;
-    final badge = isTablet ? 40.0 : 36.0;
+    final nameSize = isTablet ? 25.0 : 16.0;
+    final scoreSize = isTablet ? 40.0 : 22.0;
+    final badge = isTablet ? 60.0 : 36.0;
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -56,7 +56,7 @@ class PlayerScoreTile extends StatelessWidget {
                     fontFamily: AppFonts.family,
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w800,
-                    fontSize: isTablet ? 17 : 15,
+                    fontSize: isTablet ? 25 : 15,
                     height: 1,
                   ),
                 ),
@@ -82,7 +82,7 @@ class PlayerScoreTile extends StatelessWidget {
             Icon(
               Icons.emoji_events_rounded,
               color: AppColors.coin.withValues(alpha: 0.95),
-              size: isTablet ? 22 : 20,
+              size: isTablet ? 40 : 20,
             ),
             SizedBox(width: isTablet ? 10 : 8),
           ],

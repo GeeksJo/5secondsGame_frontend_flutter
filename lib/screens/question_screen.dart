@@ -51,7 +51,19 @@ class _QuestionScreenState extends State<QuestionScreen>
   static const _introTickGap = Duration(milliseconds: 420);
   static const _afterLastIntroTick = Duration(milliseconds: 160);
 
-  double _timerDiameter(bool isTablet) => isTablet ? 128 : 112;
+  double _timerDiameter(BuildContext context) {
+    final isTablet = ResponsiveLayout.isTablet(context);
+    final wide = ResponsiveLayout.useWideGameLayout(context);
+    final compact = ResponsiveLayout.isCompactHeight(context);
+    if (wide && compact) {
+      return isTablet ? 120 : 92;
+    }
+    if (isTablet && ResponsiveLayout.isLandscape(context)) {
+      return compact ? 128 : 154;
+    }
+    if (isTablet) return 162;
+    return 112;
+  }
 
   @override
   void initState() {
@@ -149,7 +161,11 @@ class _QuestionScreenState extends State<QuestionScreen>
     _timerController.forward(from: 0);
   }
 
-  Widget _buildIntroCountdownDisplay(double diameter, int introTotalBeats) {
+  Widget _buildIntroCountdownDisplay(
+    double diameter,
+    int introTotalBeats, {
+    double? introRingStrokeWidth,
+  }) {
     final beat = _introBeat!;
     final progress = (introTotalBeats + 1 - beat) / introTotalBeats.toDouble();
     return TweenAnimationBuilder<double>(
@@ -165,6 +181,7 @@ class _QuestionScreenState extends State<QuestionScreen>
         secondsLeft: beat,
         isIntro: true,
         diameter: diameter,
+        introRingStrokeWidth: introRingStrokeWidth,
       ),
     );
   }
@@ -173,13 +190,20 @@ class _QuestionScreenState extends State<QuestionScreen>
     AppLocalizations l10n,
     bool isTablet,
     int introTotalBeats,
+    double timerDiameter,
   ) {
-    final d = _timerDiameter(isTablet);
+    final d = timerDiameter;
+    final introStroke = isTablet ? 12.0 : null;
+    final answerStroke = isTablet ? 14.0 : null;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (!_introComplete && _introBeat != null)
-          _buildIntroCountdownDisplay(d, introTotalBeats)
+          _buildIntroCountdownDisplay(
+            d,
+            introTotalBeats,
+            introRingStrokeWidth: introStroke,
+          )
         else
           AnimatedBuilder(
             animation: _timerController,
@@ -190,6 +214,7 @@ class _QuestionScreenState extends State<QuestionScreen>
                 progress: (1 - _timerController.value).clamp(0.0, 1.0),
                 secondsLeft: remaining.ceil(),
                 diameter: d,
+                answerRingStrokeWidth: answerStroke,
               );
             },
           ),
@@ -201,7 +226,7 @@ class _QuestionScreenState extends State<QuestionScreen>
               style: TextStyle(
                 fontFamily: AppFonts.family,
                 color: AppColors.textMuted,
-                fontSize: isTablet ? 17 : 15,
+                fontSize: isTablet ? 26 : 15,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
@@ -219,13 +244,16 @@ class _QuestionScreenState extends State<QuestionScreen>
     required VoidCallback? onRemoveAds,
   }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+      padding: EdgeInsets.fromLTRB(4, isTablet ? 8 : 4, 4, 0),
       child: Row(
         children: [
           IconButton(
+            style: IconButton.styleFrom(
+              minimumSize: Size(isTablet ? 64 : 48, isTablet ? 64 : 48),
+            ),
             icon: Icon(
               Icons.pause_rounded,
-              size: 26,
+              size: isTablet ? 80 : 26,
               color: onPause == null
                   ? AppColors.textHint
                   : AppColors.textSecondary,
@@ -241,7 +269,7 @@ class _QuestionScreenState extends State<QuestionScreen>
               style: TextStyle(
                 fontFamily: AppFonts.family,
                 color: AppColors.coin,
-                fontSize: isTablet ? 17.0 : 15.0,
+                fontSize: isTablet ? 50.0 : 15.0,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -249,15 +277,17 @@ class _QuestionScreenState extends State<QuestionScreen>
           ValueListenableBuilder<bool>(
             valueListenable: GameKit.iap.adsRemoved,
             builder: (context, adsRemoved, _) {
+              final w = isTablet ? 72.0 : 48.0;
               if (adsRemoved) {
-                return const SizedBox(width: 48, height: 48);
+                return SizedBox(width: w, height: w);
               }
               return IconButton(
+                style: IconButton.styleFrom(minimumSize: Size(w, w)),
                 tooltip: l10n.removeAds,
                 onPressed: onRemoveAds,
                 icon: Image.asset(
                   'assets/images/no_ads.png',
-                  height: isTablet ? 50 : 40,
+                  height: isTablet ? 100 : 40,
                   fit: BoxFit.contain,
                 ),
               );
@@ -268,131 +298,49 @@ class _QuestionScreenState extends State<QuestionScreen>
     );
   }
 
-  /// Tappable row above the banner: opens cross-promo when [onOtherGames] is non-null.
-  Widget _buildOtherGamesCta({
-    required AppLocalizations l10n,
-    required bool isTablet,
-    required VoidCallback? onOtherGames,
-  }) {
-    final enabled = onOtherGames != null;
-    final iconBg = AppColors.coin.withValues(alpha: enabled ? 0.22 : 0.1);
-    final iconFg = enabled ? AppColors.coin : AppColors.textHint;
-    final hPad = isTablet ? 22.0 : 18.0;
-    final vPad = isTablet ? 13.0 : 11.0;
-
-    return Material(
-      color: Colors.transparent,
-      child: Ink(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          color: AppColors.cardFill,
-          border: Border.all(
-            color: enabled ? AppColors.cardBorder : AppColors.textDisabled,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: enabled ? 0.35 : 0.2),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: InkWell(
-          onTap: onOtherGames,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          splashColor: AppColors.primary.withValues(alpha: 0.2),
-          highlightColor: AppColors.primary.withValues(alpha: 0.1),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(hPad * 0.55, vPad, hPad, vPad),
-            child: Row(
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: iconBg,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Icon(
-                      Icons.grid_view_rounded,
-                      size: isTablet ? 22 : 20,
-                      color: iconFg,
-                    ),
-                  ),
-                ),
-                SizedBox(width: isTablet ? 14 : 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n.moreGames,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: AppFonts.family,
-                          color: enabled
-                              ? AppColors.textPrimary
-                              : AppColors.textHint,
-                          fontSize: isTablet ? 16.5 : 15,
-                          fontWeight: FontWeight.w800,
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n.moreGamesSubtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: AppFonts.family,
-                          color: enabled
-                              ? AppColors.textMuted
-                              : AppColors.textDisabled,
-                          fontSize: isTablet ? 12.5 : 11.5,
-                          fontWeight: FontWeight.w500,
-                          height: 1.25,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Builder(
-                  builder: (context) {
-                    final rtl = Directionality.of(context) == TextDirection.rtl;
-                    return Icon(
-                      rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: isTablet ? 28 : 26,
-                      color: enabled
-                          ? AppColors.textSecondary
-                          : AppColors.textDisabled,
-                    );
-                  },
-                ),
-              ],
+  Widget _buildRoundLine(
+    AppLocalizations l10n,
+    GameProvider game,
+    bool isTablet,
+  ) {
+    final text = '${l10n.round} ${game.currentRound}/${game.totalRounds}';
+    if (!isTablet) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Center(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: AppFonts.family,
+              color: AppColors.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRoundLine(AppLocalizations l10n, GameProvider game) {
+      );
+    }
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.only(top: 8),
       child: Center(
-        child: Text(
-          '${l10n.round} ${game.currentRound}/${game.totalRounds}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontFamily: AppFonts.family,
-            color: AppColors.textMuted,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.cardFill,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(color: AppColors.cardBorder),
+          ),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: AppFonts.family,
+              color: AppColors.textMuted,
+              fontSize: 35,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+            ),
           ),
         ),
       ),
@@ -400,8 +348,9 @@ class _QuestionScreenState extends State<QuestionScreen>
   }
 
   Widget _buildQuestionPanel({required bool isTablet, required String text}) {
+    final fontSize = isTablet ? 38.0 : 22.0;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 28 : 20),
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 280),
         opacity: _introComplete ? 1 : 0.48,
@@ -418,7 +367,7 @@ class _QuestionScreenState extends State<QuestionScreen>
             style: TextStyle(
               fontFamily: AppFonts.family,
               color: AppColors.textPrimary,
-              fontSize: isTablet ? 28.0 : 22.0,
+              fontSize: fontSize,
               fontWeight: FontWeight.w700,
               height: 1.35,
             ),
@@ -428,42 +377,10 @@ class _QuestionScreenState extends State<QuestionScreen>
     );
   }
 
-  Widget _buildMainQuestionColumn({
-    required AppLocalizations l10n,
-    required GameProvider game,
-    required bool isTablet,
-    required bool is1v1,
-    required int introTotalBeats,
-    required VoidCallback? onPause,
-    required VoidCallback? onRemoveAds,
-    required VoidCallback? onOtherGames,
-    required String headerName,
-    required String questionText,
-    required bool redEnabled,
-    required VoidCallback onDone,
-  }) {
+  Widget _buildBannerSlot() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHeaderRow(
-          l10n: l10n,
-          isTablet: isTablet,
-          centerName: headerName,
-          onPause: onPause,
-          onRemoveAds: onRemoveAds,
-        ),
-        _buildRoundLine(l10n, game),
-        if (is1v1 && game.players.length == 2)
-          _build1v1Scoreboard(game, isTablet)
-        else
-          const SizedBox(height: 6),
-        const Spacer(flex: 2),
-        _buildCountdownBlock(l10n, isTablet, introTotalBeats),
-        SizedBox(height: isTablet ? 28 : 20),
-        _buildQuestionPanel(isTablet: isTablet, text: questionText),
-        const Spacer(flex: 3),
-        RedButton(label: l10n.done, enabled: redEnabled, onPressed: onDone),
-        const Spacer(flex: 1),
-
         const SizedBox(height: 10),
         ValueListenableBuilder<bool>(
           valueListenable: GameKit.ads.bannersEnabled,
@@ -473,6 +390,55 @@ class _QuestionScreenState extends State<QuestionScreen>
           },
         ),
         const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildMainQuestionColumn({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required GameProvider game,
+    required bool isTablet,
+    required bool is1v1,
+    required int introTotalBeats,
+    required VoidCallback? onPause,
+    required VoidCallback? onRemoveAds,
+    required String headerName,
+    required String questionText,
+    required bool redEnabled,
+    required VoidCallback onDone,
+  }) {
+    final timerD = _timerDiameter(context);
+    final redBase = ResponsiveLayout.redButtonDiameter(context);
+    final redD = isTablet ? redBase + 36.0 : redBase;
+
+    return Column(
+      children: [
+        _buildHeaderRow(
+          l10n: l10n,
+          isTablet: isTablet,
+          centerName: headerName,
+          onPause: onPause,
+          onRemoveAds: onRemoveAds,
+        ),
+        _buildRoundLine(l10n, game, isTablet),
+        if (is1v1 && game.players.length == 2)
+          _build1v1Scoreboard(game, isTablet)
+        else
+          const SizedBox(height: 6),
+        const Spacer(flex: 2),
+        _buildCountdownBlock(l10n, isTablet, introTotalBeats, timerD),
+        SizedBox(height: isTablet ? 28 : 20),
+        _buildQuestionPanel(isTablet: isTablet, text: questionText),
+        const Spacer(flex: 3),
+        RedButton(
+          label: l10n.done,
+          enabled: redEnabled,
+          onPressed: onDone,
+          diameter: redD,
+        ),
+        const Spacer(flex: 1),
+        _buildBannerSlot(),
       ],
     );
   }
@@ -530,121 +496,129 @@ class _QuestionScreenState extends State<QuestionScreen>
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.45),
-      builder: (dialogContext) => Dialog(
-        elevation: 0,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-        backgroundColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.96),
+      builder: (dialogContext) {
+        final isPad = ResponsiveLayout.isTablet(dialogContext);
+        return Dialog(
+          elevation: 0,
+          insetPadding: EdgeInsets.symmetric(horizontal: isPad ? 40 : 24),
+          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: AppColors.cardBorder),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black45,
-                blurRadius: 24,
-                offset: Offset(0, 10),
-              ),
-            ],
           ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.pause_rounded,
-                      color: AppColors.textPrimary,
-                      size: 34,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    l10n.paused,
-                    style: const TextStyle(
-                      fontFamily: AppFonts.family,
-                      color: AppColors.textPrimary,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                        _togglePause();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.textPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                        ),
-                        textStyle: const TextStyle(
-                          fontFamily: AppFonts.family,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.96),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: AppColors.cardBorder),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black45,
+                  blurRadius: 24,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: isPad ? 440 : 360),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isPad ? 32 : 24,
+                  vertical: isPad ? 32 : 24,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: isPad ? 72.0 : 58,
+                      height: isPad ? 72.0 : 58,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.14),
+                        shape: BoxShape.circle,
                       ),
-                      child: Text(l10n.resume),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        Navigator.pop(dialogContext);
-                        await GameKitAdBridge.presentOnAbandonHome();
-                        if (!mounted) return;
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const HomeScreen()),
-                          (route) => false,
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                          color: AppColors.danger,
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                        ),
-                        textStyle: const TextStyle(
-                          fontFamily: AppFonts.family,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      child: Text(
-                        l10n.home,
-                        style: const TextStyle(color: AppColors.danger),
+                      child: Icon(
+                        Icons.pause_rounded,
+                        color: AppColors.textPrimary,
+                        size: isPad ? 42 : 34,
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(height: isPad ? 18 : 14),
+                    Text(
+                      l10n.paused,
+                      style: TextStyle(
+                        fontFamily: AppFonts.family,
+                        color: AppColors.textPrimary,
+                        fontSize: isPad ? 42 : 36,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: isPad ? 24 : 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: isPad ? 62.0 : 54,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                          _togglePause();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.textPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          textStyle: TextStyle(
+                            fontFamily: AppFonts.family,
+                            fontSize: isPad ? 22 : 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        child: Text(l10n.resume),
+                      ),
+                    ),
+                    SizedBox(height: isPad ? 14 : 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: isPad ? 62.0 : 54,
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          Navigator.pop(dialogContext);
+                          await GameKitAdBridge.presentOnAbandonHome();
+                          if (!mounted) return;
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: AppColors.danger,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          textStyle: TextStyle(
+                            fontFamily: AppFonts.family,
+                            fontSize: isPad ? 21 : 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        child: Text(
+                          l10n.home,
+                          style: const TextStyle(color: AppColors.danger),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -766,6 +740,28 @@ class _QuestionScreenState extends State<QuestionScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final game = context.watch<GameProvider>();
+
+    if (game.players.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+        );
+      });
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          body: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: AppDecorations.gradientBg,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+        ),
+      );
+    }
+
     final locale = context.watch<LocaleProvider>().locale.languageCode;
     final question = game.currentQuestion;
     final isTablet = ResponsiveLayout.isTablet(context);
@@ -780,6 +776,7 @@ class _QuestionScreenState extends State<QuestionScreen>
         : (question?.text(locale) ?? '');
 
     final body = _buildMainQuestionColumn(
+      context: context,
       l10n: l10n,
       game: game,
       isTablet: isTablet,
@@ -789,14 +786,20 @@ class _QuestionScreenState extends State<QuestionScreen>
       onRemoveAds: _turnFlipping || !_introComplete || _answered || _paused
           ? null
           : _removeAdsFromHeader,
-      onOtherGames: _turnFlipping || !_introComplete || _answered || _paused
-          ? null
-          : _openOtherGames,
       headerName: headerName,
       questionText: questionText,
       redEnabled: _introComplete,
       onDone: _onDonePressed,
     );
+
+    final questionContentMaxWidth = isTablet
+        ? double.infinity
+        : ResponsiveLayout.maxWidthFor(
+            context,
+            phone: 600,
+            tabletPortrait: 780,
+            tabletLandscape: 960,
+          );
 
     return PopScope(
       canPop: false,
@@ -808,7 +811,7 @@ class _QuestionScreenState extends State<QuestionScreen>
           child: SafeArea(
             bottom: false,
             child: ResponsiveLayout(
-              maxWidth: 600,
+              maxWidth: questionContentMaxWidth,
               child: Stack(
                 children: [
                   AnimatedBuilder(
@@ -843,10 +846,12 @@ class _QuestionScreenState extends State<QuestionScreen>
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: _turnFlipping ? null : _openOtherGames,
-                          borderRadius: BorderRadius.circular(AppRadius.round),
+                          borderRadius: BorderRadius.circular(
+                            AppRadius.round(context),
+                          ),
                           child: Ink(
-                            width: 44,
-                            height: 44,
+                            width: isTablet ? 100 : 44,
+                            height: isTablet ? 100 : 44,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
@@ -861,7 +866,7 @@ class _QuestionScreenState extends State<QuestionScreen>
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(
-                                AppRadius.round,
+                                AppRadius.round(context),
                               ),
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.22),
@@ -881,8 +886,8 @@ class _QuestionScreenState extends State<QuestionScreen>
                                   angle: -0.78539816339,
                                   child: Image.asset(
                                     'assets/images/game_controller.png',
-                                    width: 24,
-                                    height: 24,
+                                    width: isTablet ? 80 : 24,
+                                    height: isTablet ? 80 : 24,
                                     fit: BoxFit.contain,
                                   ),
                                 ),
@@ -912,6 +917,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     const introTotalBeats = 2;
 
     return _buildMainQuestionColumn(
+      context: context,
       l10n: l10n,
       game: game,
       isTablet: isTablet,
@@ -919,7 +925,6 @@ class _QuestionScreenState extends State<QuestionScreen>
       introTotalBeats: introTotalBeats,
       onPause: null,
       onRemoveAds: null,
-      onOtherGames: null,
       headerName: game.currentPlayer.name,
       questionText: question?.text(locale) ?? '',
       redEnabled: _introComplete,
@@ -933,7 +938,12 @@ class _QuestionScreenState extends State<QuestionScreen>
     final turn = game.currentPlayerIndex;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(
+        isTablet ? 20 : 16,
+        8,
+        isTablet ? 20 : 16,
+        0,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -947,19 +957,19 @@ class _QuestionScreenState extends State<QuestionScreen>
                 color: turn == 0
                     ? AppColors.textPrimary
                     : AppColors.textSecondary,
-                fontSize: isTablet ? 15.0 : 13.0,
+                fontSize: isTablet ? 30.0 : 13.0,
                 fontWeight: turn == 0 ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.symmetric(horizontal: isTablet ? 14 : 10),
             child: Text(
               '${p1.score}  —  ${p2.score}',
               style: TextStyle(
                 fontFamily: AppFonts.family,
                 color: AppColors.textPrimary,
-                fontSize: isTablet ? 18.0 : 16.0,
+                fontSize: isTablet ? 40.0 : 16.0,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -975,7 +985,7 @@ class _QuestionScreenState extends State<QuestionScreen>
                 color: turn == 1
                     ? AppColors.textPrimary
                     : AppColors.textSecondary,
-                fontSize: isTablet ? 15.0 : 13.0,
+                fontSize: isTablet ? 30.0 : 13.0,
                 fontWeight: turn == 1 ? FontWeight.w700 : FontWeight.w400,
               ),
             ),

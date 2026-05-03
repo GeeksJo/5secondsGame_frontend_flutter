@@ -51,6 +51,10 @@ class GameProvider extends ChangeNotifier {
   }
 
   void startGame() {
+    if (_players.isEmpty) {
+      notifyListeners();
+      return;
+    }
     _currentRound = 1;
     _currentPlayerIndex = 0;
     _isFlipped = false;

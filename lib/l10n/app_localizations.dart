@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'اختر فئة واحدة على الأقل'**
   String get selectAtLeastOne;
 
+  /// No description provided for @noPlayersSet.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف اللاعبين من الشاشة الرئيسية قبل البدء.'**
+  String get noPlayersSet;
+
   /// No description provided for @player.
   ///
   /// In ar, this message translates to:
