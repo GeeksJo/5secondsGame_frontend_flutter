@@ -102,43 +102,43 @@ class SettingsScreen extends StatelessWidget {
                   sectionSpacing: _sectionSpacing,
                   maxWidth: double.infinity,
                 ),
-                if (kDebugMode) ...[
-                  SizedBox(height: _sectionSpacing),
-                  ListTile(
-                    leading: Icon(
-                      Icons.leaderboard_outlined,
-                      color: AppColors.textSecondary,
-                      size: isTablet ? 32 : 24,
-                    ),
-                    title: Text(
-                      'Preview results (debug)',
-                      style: TextStyle(
-                        fontFamily: AppFonts.family,
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: isTablet ? 22 : null,
-                      ),
-                    ),
-                    subtitle: Text(
-                      'Scoreboard test data',
-                      style: TextStyle(
-                        fontFamily: AppFonts.family,
-                        color: AppColors.textMuted,
-                        fontSize: isTablet ? 17 : 12,
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ScoreboardScreen(
-                            debugRankedPlayers:
-                                ScoreboardScreenTestData.rankedPlayersFixture(),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                // if (kDebugMode) ...[
+                //   SizedBox(height: _sectionSpacing),
+                //   ListTile(
+                //     leading: Icon(
+                //       Icons.leaderboard_outlined,
+                //       color: AppColors.textSecondary,
+                //       size: isTablet ? 32 : 24,
+                //     ),
+                //     title: Text(
+                //       'Preview results (debug)',
+                //       style: TextStyle(
+                //         fontFamily: AppFonts.family,
+                //         color: AppColors.textPrimary,
+                //         fontWeight: FontWeight.w600,
+                //         fontSize: isTablet ? 22 : null,
+                //       ),
+                //     ),
+                //     subtitle: Text(
+                //       'Scoreboard test data',
+                //       style: TextStyle(
+                //         fontFamily: AppFonts.family,
+                //         color: AppColors.textMuted,
+                //         fontSize: isTablet ? 17 : 12,
+                //       ),
+                //     ),
+                //     onTap: () {
+                //       Navigator.of(context).push(
+                //         MaterialPageRoute<void>(
+                //           builder: (_) => ScoreboardScreen(
+                //             debugRankedPlayers:
+                //                 ScoreboardScreenTestData.rankedPlayersFixture(),
+                //           ),
+                //         ),
+                //       );
+                //     },
+                //   ),
+                // ],
               ],
             ),
           ),
