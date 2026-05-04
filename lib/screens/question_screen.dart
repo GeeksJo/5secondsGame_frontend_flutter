@@ -15,6 +15,7 @@ import '../providers/locale_provider.dart';
 import '../services/game_kit_bootstrap.dart';
 import '../services/storage_service.dart';
 import '../services/game_kit_products.dart';
+import '../services/ads_flag.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer.dart';
 import '../widgets/app_cross_promo.dart';
@@ -378,6 +379,7 @@ class _QuestionScreenState extends State<QuestionScreen>
   }
 
   Widget _buildBannerSlot() {
+    if (!AdsFlag.enabled) return const SizedBox.shrink();
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
