@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../services/ads_flag.dart';
+
 /// Loads an anchored adaptive banner via [GameKit.ads] (dispose-safe).
 class GameKitBannerSlot extends StatefulWidget {
   const GameKitBannerSlot({super.key});
@@ -20,6 +22,7 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
   }
 
   Future<void> _load() async {
+    if (!AdsFlag.enabled) return;
     if (!mounted) return;
     final width = MediaQuery.sizeOf(context).width.truncate();
     final size =

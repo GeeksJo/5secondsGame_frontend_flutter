@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import '../services/storage_service.dart';
+import '../services/ads_flag.dart';
 
 class CoinProvider extends ChangeNotifier {
   final StorageService _storage;
@@ -52,6 +53,7 @@ class CoinProvider extends ChangeNotifier {
   }
 
   Future<bool> watchAdForCoins() async {
+    if (!AdsFlag.enabled) return false;
     await GameKit.ads.loadRewarded();
     final rewarded = await GameKit.ads.showRewarded();
     if (rewarded) {
@@ -60,5 +62,5 @@ class CoinProvider extends ChangeNotifier {
     return rewarded;
   }
 
-  bool get isAdReady => GameKit.ads.isRewardedReady;
+  bool get isAdReady => AdsFlag.enabled && GameKit.ads.isRewardedReady;
 }

@@ -6,6 +6,7 @@ import 'package:game_kit/game_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/app_theme.dart';
+import 'ads_flag.dart';
 import 'app_navigator.dart';
 import 'game_kit_products.dart';
 import 'storage_service.dart';
@@ -34,6 +35,10 @@ Future<void> initializeGameKit(StorageService storage) async {
     final v = env(key);
     return v.isEmpty ? fallback : v;
   }
+
+  // By default, ads are disabled in release builds.
+  // This is intentionally a compile-time flag to keep it deterministic per build.
+  final adsEnabled = AdsFlag.enabled;
 
   await GameKit.initialize(
     GameKitConfig(
@@ -125,12 +130,16 @@ Future<void> initializeGameKit(StorageService storage) async {
     ),
   );
 
-  unawaited(GameKit.ads.loadInterstitial());
-  unawaited(GameKit.ads.loadRewarded());
+  if (adsEnabled) {
+    unawaited(GameKit.ads.loadInterstitial());
+    unawaited(GameKit.ads.loadRewarded());
+  }
 
   await _migrateLegacyDonationTotal(storage);
   await _prefetchIapCatalog();
-  GameKitAdBridge.attach();
+  if (adsEnabled) {
+    GameKitAdBridge.attach();
+  }
   _listenRatingPrompts();
   _listenRemoveAdsTooltip();
 }
@@ -278,6 +287,7 @@ final class GameKitAdBridge {
   static Completer<void>? _waiter;
 
   static void attach() {
+    if (!AdsFlag.enabled) return;
     _sub?.cancel();
     _sub = GameKit.ads.onShouldShowInterstitial.listen((_) {
       unawaited(_present());
@@ -285,6 +295,7 @@ final class GameKitAdBridge {
   }
 
   static Future<void> _present() async {
+    if (!AdsFlag.enabled) return;
     try {
       await GameKit.ads.loadInterstitial();
       await GameKit.ads.showInterstitial();
@@ -297,6 +308,7 @@ final class GameKitAdBridge {
   }
 
   static Future<void> presentAfterLevel({required bool failed}) async {
+    if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
     _waiter = Completer<void>();
     await GameKit.ads.levelCompleted(failed: failed);
@@ -314,6 +326,7 @@ final class GameKitAdBridge {
   }
 
   static Future<void> presentOnAbandonHome() async {
+    if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
     try {
       await GameKit.ads.loadInterstitial();

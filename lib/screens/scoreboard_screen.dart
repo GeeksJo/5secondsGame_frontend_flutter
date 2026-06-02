@@ -8,6 +8,7 @@ import 'dart:async';
 import '../models/player.dart';
 import '../providers/game_provider.dart';
 import '../services/game_kit_bootstrap.dart';
+import '../services/ads_flag.dart';
 import '../theme/app_theme.dart';
 import '../widgets/player_score_tile.dart';
 import '../widgets/responsive_layout.dart';
@@ -38,6 +39,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   void initState() {
     super.initState();
     if (widget.debugRankedPlayers != null) {
+      return;
+    }
+    if (!AdsFlag.enabled || GameKit.iap.adsRemoved.value) {
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
