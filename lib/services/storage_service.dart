@@ -37,8 +37,8 @@ class StorageService {
     return expiry;
   }
 
-  Future<void> setRentedExpiry(String categoryKey, DateTime expiry) =>
-      _prefs.setInt('$_rentedPrefix$categoryKey', expiry.millisecondsSinceEpoch);
+  Future<void> setRentedExpiry(String categoryKey, DateTime expiry) => _prefs
+      .setInt('$_rentedPrefix$categoryKey', expiry.millisecondsSinceEpoch);
 
   String getLocale() => _prefs.getString(_localeKey) ?? 'ar';
 

@@ -29,9 +29,9 @@ import 'storage_service.dart';
 Future<void> initializeGameKit(StorageService storage) async {
   final persistedLocale = Locale(storage.getLocale());
 
-  String _env(String key) => (dotenv.env[key] ?? '').trim();
-  String _envOr(String key, String fallback) {
-    final v = _env(key);
+  String env(String key) => (dotenv.env[key] ?? '').trim();
+  String envOr(String key, String fallback) {
+    final v = env(key);
     return v.isEmpty ? fallback : v;
   }
 
@@ -71,27 +71,27 @@ Future<void> initializeGameKit(StorageService storage) async {
         interstitialEveryNLevels: 2,
         adMobEnvironment: AdMobUnitEnvironment.prod,
         prodAdMobUnitIds: AdMobProdUnitIds(
-          interstitialAndroid: _envOr(
+          interstitialAndroid: envOr(
             'ADMOB_ANDROID_INTERSTITIAL_ID',
             AdMobGoogleSampleUnitIds.interstitialAndroid,
           ),
-          interstitialIos: _envOr(
+          interstitialIos: envOr(
             'ADMOB_IOS_INTERSTITIAL_ID',
             AdMobGoogleSampleUnitIds.interstitialIos,
           ),
-          bannerAndroid: _envOr(
+          bannerAndroid: envOr(
             'ADMOB_ANDROID_BANNER_ID',
             AdMobGoogleSampleUnitIds.bannerAndroid,
           ),
-          bannerIos: _envOr(
+          bannerIos: envOr(
             'ADMOB_IOS_BANNER_ID',
             AdMobGoogleSampleUnitIds.bannerIos,
           ),
-          rewardedAndroid: _envOr(
+          rewardedAndroid: envOr(
             'ADMOB_ANDROID_REWARDED_ID',
             AdMobGoogleSampleUnitIds.rewardedAndroid,
           ),
-          rewardedIos: _envOr(
+          rewardedIos: envOr(
             'ADMOB_IOS_REWARDED_ID',
             AdMobGoogleSampleUnitIds.rewardedIos,
           ),
