@@ -39,7 +39,7 @@ Future<void> initializeGameKit(StorageService storage) async {
   // By default, ads are disabled in release builds.
   // This is intentionally a compile-time flag to keep it deterministic per build.
   final adsEnabled = AdsFlag.enabled;
-
+  print(adsEnabled);
   await GameKit.initialize(
     GameKitConfig(
       locale: persistedLocale,
