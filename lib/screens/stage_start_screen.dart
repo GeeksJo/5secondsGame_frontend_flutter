@@ -1,17 +1,14 @@
-import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:game_kit/game_kit.dart';
-import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:yalla/l10n/app_localizations.dart';
 
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../providers/locale_provider.dart';
-import '../services/ads_flag.dart';
-import '../services/safe_audio_player.dart';
 import '../theme/app_theme.dart';
 import '../widgets/responsive_layout.dart';
 import 'home_screen.dart';
@@ -32,7 +29,7 @@ class _StageStartScreenState extends State<StageStartScreen>
   late final bool _ffa;
   late final int _countFrom;
   late final AnimationController _controller;
-  final SafeAudioPlayer _audio = SafeAudioPlayer();
+  final AudioPlayer _audio = AudioPlayer();
   late int _displayNumber;
 
   @override
@@ -53,9 +50,6 @@ class _StageStartScreenState extends State<StageStartScreen>
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (AdsFlag.enabled && !GameKit.iap.adsRemoved.value) {
-        unawaited(GameKit.ads.loadInterstitial());
-      }
       HapticFeedback.lightImpact();
       _playTickIfSound();
       _controller.forward();
@@ -66,7 +60,7 @@ class _StageStartScreenState extends State<StageStartScreen>
   void dispose() {
     _controller.removeListener(_onTick);
     _controller.dispose();
-    unawaited(_audio.dispose());
+    _audio.dispose();
     super.dispose();
   }
 
@@ -84,7 +78,7 @@ class _StageStartScreenState extends State<StageStartScreen>
     if (_ffa) return;
     final sound = context.read<LocaleProvider>().soundEnabled;
     if (!sound) return;
-    unawaited(_audio.playAsset('sounds/tick.wav'));
+    _audio.play(AssetSource('sounds/tick.wav')).catchError((_) {});
   }
 
   void _onComplete() {

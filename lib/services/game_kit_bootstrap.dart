@@ -131,7 +131,7 @@ Future<void> initializeGameKit(StorageService storage) async {
   );
 
   if (adsEnabled) {
-    await GameKit.ads.loadInterstitial();
+    unawaited(GameKit.ads.loadInterstitial());
     unawaited(GameKit.ads.loadRewarded());
   }
 
@@ -283,31 +283,27 @@ Future<void> _showRatingFeedbackDialog(BuildContext context) {
 final class GameKitAdBridge {
   GameKitAdBridge._();
 
-  static void attach() {
-    // Interstitials are presented from [presentAfterLevel] only so we never
-    // double-fire on the synchronous broadcast stream.
-  }
+  static StreamSubscription<void>? _sub;
+  static Completer<void>? _waiter;
 
-  /// [GameKit.ads.loadInterstitial] is a no-op while a load is already in flight,
-  /// so retry until show succeeds or [timeout] elapses (first round often hits this).
-  static Future<bool> _loadAndShowInterstitial({
-    Duration timeout = const Duration(seconds: 30),
-  }) async {
-    final deadline = DateTime.now().add(timeout);
-    while (DateTime.now().isBefore(deadline)) {
-      await GameKit.ads.loadInterstitial();
-      if (await GameKit.ads.showInterstitial()) return true;
-      await Future.delayed(const Duration(milliseconds: 400));
-    }
-    return false;
+  static void attach() {
+    if (!AdsFlag.enabled) return;
+    _sub?.cancel();
+    _sub = GameKit.ads.onShouldShowInterstitial.listen((_) {
+      unawaited(_present());
+    });
   }
 
   static Future<void> _present() async {
     if (!AdsFlag.enabled) return;
     try {
-      await _loadAndShowInterstitial();
+      await GameKit.ads.loadInterstitial();
+      await GameKit.ads.showInterstitial();
     } finally {
       await GameKit.ads.adClosed();
+      if (_waiter != null && !_waiter!.isCompleted) {
+        _waiter!.complete();
+      }
     }
   }
 
@@ -315,29 +311,45 @@ final class GameKitAdBridge {
     if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
 
-    var shouldShow = false;
-    final sub = GameKit.ads.onShouldShowInterstitial.listen((_) {
-      shouldShow = true;
+    var interstitialRequested = false;
+    late final StreamSubscription<void> probe;
+    probe = GameKit.ads.onShouldShowInterstitial.listen((_) {
+      interstitialRequested = true;
     });
+
+    _waiter = Completer<void>();
     try {
       await GameKit.ads.levelCompleted(failed: failed);
-    } finally {
-      await sub.cancel();
-    }
+      await probe.cancel();
 
-    if (!shouldShow) return;
-    await _present();
+      if (!interstitialRequested) return;
+
+      await _waiter!.future.timeout(
+        const Duration(seconds: 45),
+        onTimeout: () {},
+      );
+    } finally {
+      await probe.cancel();
+      if (_waiter != null && !_waiter!.isCompleted) {
+        _waiter!.complete();
+      }
+      _waiter = null;
+    }
   }
 
   static Future<void> presentOnAbandonHome() async {
     if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
     try {
-      await _loadAndShowInterstitial();
+      await GameKit.ads.loadInterstitial();
+      await GameKit.ads.showInterstitial();
     } finally {
       await GameKit.ads.adClosed();
     }
   }
 
-  static Future<void> detach() async {}
+  static Future<void> detach() async {
+    await _sub?.cancel();
+    _sub = null;
+  }
 }

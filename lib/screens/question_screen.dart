@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +16,6 @@ import '../services/game_kit_bootstrap.dart';
 import '../services/storage_service.dart';
 import '../services/game_kit_products.dart';
 import '../services/ads_flag.dart';
-import '../services/safe_audio_player.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer.dart';
 import '../widgets/app_cross_promo.dart';
@@ -46,7 +46,7 @@ class _QuestionScreenState extends State<QuestionScreen>
   String? _flipName;
   String? _flipQuestionText;
   late int _answerSeconds;
-  final SafeAudioPlayer _audioPlayer = SafeAudioPlayer();
+  final AudioPlayer _audioPlayer = AudioPlayer();
   bool _introComplete = false;
   int? _introBeat;
 
@@ -107,7 +107,7 @@ class _QuestionScreenState extends State<QuestionScreen>
   void dispose() {
     _timerController.dispose();
     _turnFlipController.dispose();
-    unawaited(_audioPlayer.dispose());
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -122,7 +122,7 @@ class _QuestionScreenState extends State<QuestionScreen>
   Future<void> _playGoSound() async {
     final soundEnabled = context.read<LocaleProvider>().soundEnabled;
     if (!soundEnabled) return;
-    await _audioPlayer.playAsset('sounds/go.wav');
+    await _audioPlayer.play(AssetSource('sounds/go.wav'));
   }
 
   Future<void> _ffaStartAnswerPhase() async {
@@ -146,7 +146,7 @@ class _QuestionScreenState extends State<QuestionScreen>
       final beat = introBeats - i;
       setState(() => _introBeat = beat);
       if (soundEnabled) {
-        await _audioPlayer.playAsset('sounds/tick.wav');
+        await _audioPlayer.play(AssetSource('sounds/tick.wav'));
       }
       _introHaptic(i);
       if (i < introBeats - 1) {
@@ -761,8 +761,6 @@ class _QuestionScreenState extends State<QuestionScreen>
     // All players finished a round; index wraps to 0 before the next question.
     final roundJustCompleted = game.currentPlayerIndex == 0;
     if (roundJustCompleted) {
-      await _audioPlayer.stop();
-      if (!mounted) return;
       await GameKitAdBridge.presentAfterLevel(failed: roundFailed);
       if (!mounted) return;
       if (AdsFlag.enabled && !GameKit.iap.adsRemoved.value) {
