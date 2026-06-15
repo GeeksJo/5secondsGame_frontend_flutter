@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// Global ad feature flag.
 ///
 /// By default, ads are disabled in release builds.
@@ -9,5 +7,5 @@ import 'package:flutter/foundation.dart';
 final class AdsFlag {
   AdsFlag._();
 
-  static const bool enabled = !kReleaseMode;
+  static const bool enabled = true;
 }
