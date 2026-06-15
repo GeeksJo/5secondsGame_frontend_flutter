@@ -91,6 +91,9 @@ class _QuestionScreenState extends State<QuestionScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(GameKit.notifications.markPlayedToday());
+      if (AdsFlag.enabled && !GameKit.iap.adsRemoved.value) {
+        unawaited(GameKit.ads.loadInterstitial());
+      }
       if (context.read<GameProvider>().mode == GameMode.freeForAll) {
         unawaited(_ffaStartAnswerPhase());
       } else {
@@ -640,11 +643,13 @@ class _QuestionScreenState extends State<QuestionScreen>
     GameKit.haptics.validAction();
     unawaited(_notifyRatingAfterCorrectAnswer());
 
-    _navigate(
-      isGameOver,
-      prevFlip: prevFlip,
-      prevName: prevName,
-      prevQuestionText: prevQuestionText,
+    unawaited(
+      _navigate(
+        isGameOver,
+        prevFlip: prevFlip,
+        prevName: prevName,
+        prevQuestionText: prevQuestionText,
+      ),
     );
   }
 
@@ -669,22 +674,24 @@ class _QuestionScreenState extends State<QuestionScreen>
 
     unawaited(GameKit.rating.levelFailed());
 
-    _navigate(
-      isGameOver,
-      prevFlip: prevFlip,
-      prevName: prevName,
-      prevQuestionText: prevQuestionText,
-      roundFailed: true,
+    unawaited(
+      _navigate(
+        isGameOver,
+        prevFlip: prevFlip,
+        prevName: prevName,
+        prevQuestionText: prevQuestionText,
+        roundFailed: true,
+      ),
     );
   }
 
-  void _navigate(
+  Future<void> _navigate(
     bool isGameOver, {
     required bool prevFlip,
     required String prevName,
     required String prevQuestionText,
     bool roundFailed = false,
-  }) {
+  }) async {
     if (!mounted) return;
     final game = context.read<GameProvider>();
 
@@ -695,7 +702,20 @@ class _QuestionScreenState extends State<QuestionScreen>
           builder: (_) => ScoreboardScreen(adsRoundFailed: roundFailed),
         ),
       );
-    } else if (game.mode == GameMode.oneVsOne) {
+      return;
+    }
+
+    // All players finished a round; index wraps to 0 before the next question.
+    final roundJustCompleted = game.currentPlayerIndex == 0;
+    if (roundJustCompleted) {
+      await GameKitAdBridge.presentAfterLevel(failed: roundFailed);
+      if (!mounted) return;
+      if (AdsFlag.enabled && !GameKit.iap.adsRemoved.value) {
+        unawaited(GameKit.ads.loadInterstitial());
+      }
+    }
+
+    if (game.mode == GameMode.oneVsOne) {
       _playTurnFlip(
         prevFlip: prevFlip,
         nextFlip: game.isFlipped,

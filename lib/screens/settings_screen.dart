@@ -1,15 +1,12 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 
 import '../providers/locale_provider.dart';
-import '../debug/scoreboard_screen_test_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_cross_promo.dart';
 import '../widgets/responsive_layout.dart';
-import 'scoreboard_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

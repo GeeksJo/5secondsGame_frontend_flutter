@@ -13,8 +13,8 @@ import 'storage_service.dart';
 
 /// Call sites for `game_kit` in this app:
 ///
-/// - [GameKit.ads.levelCompleted] — end of match on [ScoreboardScreen]
-///   (`failed: false` on win, `failed: true` when match ends after a timeout).
+/// - [GameKit.ads.levelCompleted] — between rounds in [QuestionScreen] and at
+///   end of match on [ScoreboardScreen] (`failed: true` skips cadence on timeout).
 /// - [GameKit.ads.adClosed] — [GameKitAdBridge] after each interstitial; [presentOnAbandonHome].
 /// - [GameKit.ads.canShowRewarded] — before rewarded in [LockedCategorySheet].
 /// - [GameKit.notifications.markPlayedToday] — first frame [QuestionScreen].
@@ -310,14 +310,26 @@ final class GameKitAdBridge {
   static Future<void> presentAfterLevel({required bool failed}) async {
     if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
+
+    var interstitialRequested = false;
+    late final StreamSubscription<void> probe;
+    probe = GameKit.ads.onShouldShowInterstitial.listen((_) {
+      interstitialRequested = true;
+    });
+
     _waiter = Completer<void>();
-    await GameKit.ads.levelCompleted(failed: failed);
     try {
+      await GameKit.ads.levelCompleted(failed: failed);
+      await probe.cancel();
+
+      if (!interstitialRequested) return;
+
       await _waiter!.future.timeout(
         const Duration(seconds: 45),
         onTimeout: () {},
       );
     } finally {
+      await probe.cancel();
       if (_waiter != null && !_waiter!.isCompleted) {
         _waiter!.complete();
       }
