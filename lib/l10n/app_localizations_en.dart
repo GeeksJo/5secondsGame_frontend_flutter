@@ -165,6 +165,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get score => 'Score';
 
   @override
+  String get draw => 'Draw';
+
+  @override
+  String get drawSubtitle => 'Same score — no winner';
+
+  @override
   String get winner => 'Winner';
 
   @override

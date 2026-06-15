@@ -5,6 +5,7 @@ import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
+import '../services/game_kit_bootstrap.dart';
 import '../theme/app_theme.dart';
 import '../widgets/responsive_layout.dart';
 import 'question_screen.dart';
@@ -23,6 +24,7 @@ class _PassScreenState extends State<PassScreen>
   @override
   void initState() {
     super.initState();
+    GameKitAdBridge.preloadInterstitial();
     _flipController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),

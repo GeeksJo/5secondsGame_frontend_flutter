@@ -111,6 +111,15 @@ class GameProvider extends ChangeNotifier {
     return sorted;
   }
 
+  /// True when exactly one player has the highest score.
+  bool get hasSingleWinner {
+    if (_players.isEmpty) return false;
+    final topScore = rankedPlayers.first.score;
+    return rankedPlayers.where((p) => p.score == topScore).length == 1;
+  }
+
+  bool get isDraw => _players.isNotEmpty && !hasSingleWinner;
+
   void resetGame() {
     _currentRound = 1;
     _currentPlayerIndex = 0;

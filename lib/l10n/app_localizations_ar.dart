@@ -163,6 +163,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get score => 'النقاط';
 
   @override
+  String get draw => 'تعادل';
+
+  @override
+  String get drawSubtitle => 'نفس النقاط — لا يوجد فائز';
+
+  @override
   String get winner => 'الفائز';
 
   @override

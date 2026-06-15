@@ -52,6 +52,8 @@ class _QuestionScreenState extends State<QuestionScreen>
 
   static const _introTickGap = Duration(milliseconds: 420);
   static const _afterLastIntroTick = Duration(milliseconds: 160);
+  static const _turnFlipDuration = Duration(milliseconds: 680);
+  static const _afterTurnFlipPause = Duration(milliseconds: 400);
 
   double _timerDiameter(BuildContext context) {
     final isTablet = ResponsiveLayout.isTablet(context);
@@ -77,7 +79,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     );
     _turnFlipController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 520),
+      duration: _turnFlipDuration,
     );
     _timerController.addStatusListener((status) {
       if (status == AnimationStatus.completed && !_answered) {
@@ -92,9 +94,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(GameKit.notifications.markPlayedToday());
-      if (AdsFlag.enabled && !GameKit.iap.adsRemoved.value) {
-        unawaited(GameKit.ads.loadInterstitial());
-      }
+      GameKitAdBridge.preloadInterstitial();
       if (context.read<GameProvider>().mode == GameMode.freeForAll) {
         unawaited(_ffaStartAnswerPhase());
       } else {
@@ -127,6 +127,7 @@ class _QuestionScreenState extends State<QuestionScreen>
 
   Future<void> _ffaStartAnswerPhase() async {
     if (!mounted || _answered) return;
+    GameKitAdBridge.preloadInterstitial();
     await _playGoSound();
     if (!mounted || _answered) return;
     HapticFeedback.mediumImpact();
@@ -135,6 +136,7 @@ class _QuestionScreenState extends State<QuestionScreen>
 
   Future<void> _startAnswerTimerAfterIntroTicks() async {
     if (!mounted || _answered) return;
+    GameKitAdBridge.preloadInterstitial();
     const introBeats = 2;
     setState(() {
       _introComplete = false;
@@ -187,6 +189,58 @@ class _QuestionScreenState extends State<QuestionScreen>
         isIntro: true,
         diameter: diameter,
         introRingStrokeWidth: introRingStrokeWidth,
+      ),
+    );
+  }
+
+  Widget _buildCrossPromoButton({
+    required bool isTablet,
+    VoidCallback? onTap,
+  }) {
+    final size = isTablet ? 100.0 : 44.0;
+    final iconSize = isTablet ? 80.0 : 24.0;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.round(context)),
+        child: Ink(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF52E3D7).withValues(alpha: 0.95),
+                const Color(0xFF23BEB4).withValues(alpha: 0.95),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.round(context)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 14,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Transform.rotate(
+            angle: 0.78539816339, // 45°
+            child: Center(
+              child: Transform.rotate(
+                angle: -0.78539816339,
+                child: Image.asset(
+                  'assets/images/game_controller.png',
+                  width: iconSize,
+                  height: iconSize,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -413,10 +467,12 @@ class _QuestionScreenState extends State<QuestionScreen>
     required String questionText,
     required bool redEnabled,
     required VoidCallback onDone,
+    VoidCallback? onCrossPromo,
   }) {
     final timerD = _timerDiameter(context);
     final redBase = ResponsiveLayout.redButtonDiameter(context);
     final redD = isTablet ? redBase + 36.0 : redBase;
+    final crossPromoSize = isTablet ? 100.0 : 44.0;
 
     return Column(
       children: [
@@ -433,7 +489,26 @@ class _QuestionScreenState extends State<QuestionScreen>
         else
           const SizedBox(height: 6),
         const Spacer(flex: 2),
-        _buildCountdownBlock(l10n, isTablet, introTotalBeats, timerD),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildCrossPromoButton(isTablet: isTablet, onTap: onCrossPromo),
+              Expanded(
+                child: Center(
+                  child: _buildCountdownBlock(
+                    l10n,
+                    isTablet,
+                    introTotalBeats,
+                    timerD,
+                  ),
+                ),
+              ),
+              SizedBox(width: crossPromoSize),
+            ],
+          ),
+        ),
         SizedBox(height: isTablet ? 28 : 20),
         _buildQuestionPanel(isTablet: isTablet, text: questionText),
         const Spacer(flex: 3),
@@ -763,9 +838,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     if (roundJustCompleted) {
       await GameKitAdBridge.presentAfterLevel(failed: roundFailed);
       if (!mounted) return;
-      if (AdsFlag.enabled && !GameKit.iap.adsRemoved.value) {
-        unawaited(GameKit.ads.loadInterstitial());
-      }
+      GameKitAdBridge.preloadInterstitial();
     }
 
     if (game.mode == GameMode.oneVsOne) {
@@ -798,7 +871,9 @@ class _QuestionScreenState extends State<QuestionScreen>
       _flipName = prevName;
       _flipQuestionText = prevQuestionText;
     });
-    _turnFlipController.forward(from: 0).then((_) {
+    _turnFlipController.forward(from: 0).then((_) async {
+      if (!mounted) return;
+      await Future<void>.delayed(_afterTurnFlipPause);
       if (!mounted) return;
       setState(() {
         _turnFlipping = false;
@@ -865,6 +940,7 @@ class _QuestionScreenState extends State<QuestionScreen>
       questionText: questionText,
       redEnabled: _introComplete,
       onDone: _onDonePressed,
+      onCrossPromo: _turnFlipping ? null : _openOtherGames,
     );
 
     final questionContentMaxWidth = isTablet
@@ -912,67 +988,6 @@ class _QuestionScreenState extends State<QuestionScreen>
                     },
                     child: body,
                   ),
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _turnFlipping ? null : _openOtherGames,
-                          borderRadius: BorderRadius.circular(
-                            AppRadius.round(context),
-                          ),
-                          child: Ink(
-                            width: isTablet ? 100 : 44,
-                            height: isTablet ? 100 : 44,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  const Color(
-                                    0xFF52E3D7,
-                                  ).withValues(alpha: 0.95),
-                                  const Color(
-                                    0xFF23BEB4,
-                                  ).withValues(alpha: 0.95),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.round(context),
-                              ),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.22),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.18),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Transform.rotate(
-                              angle: 0.78539816339, // 45°
-                              child: Center(
-                                child: Transform.rotate(
-                                  angle: -0.78539816339,
-                                  child: Image.asset(
-                                    'assets/images/game_controller.png',
-                                    width: isTablet ? 80 : 24,
-                                    height: isTablet ? 80 : 24,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -1004,6 +1019,7 @@ class _QuestionScreenState extends State<QuestionScreen>
       questionText: question?.text(locale) ?? '',
       redEnabled: _introComplete,
       onDone: () {},
+      onCrossPromo: null,
     );
   }
 

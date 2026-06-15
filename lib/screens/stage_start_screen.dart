@@ -9,6 +9,7 @@ import 'package:yalla/l10n/app_localizations.dart';
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../providers/locale_provider.dart';
+import '../services/game_kit_bootstrap.dart';
 import '../theme/app_theme.dart';
 import '../widgets/responsive_layout.dart';
 import 'home_screen.dart';
@@ -50,6 +51,7 @@ class _StageStartScreenState extends State<StageStartScreen>
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      GameKitAdBridge.preloadInterstitial();
       HapticFeedback.lightImpact();
       _playTickIfSound();
       _controller.forward();

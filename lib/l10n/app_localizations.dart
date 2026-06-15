@@ -404,6 +404,18 @@ abstract class AppLocalizations {
   /// **'النقاط'**
   String get score;
 
+  /// No description provided for @draw.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعادل'**
+  String get draw;
+
+  /// No description provided for @drawSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'نفس النقاط — لا يوجد فائز'**
+  String get drawSubtitle;
+
   /// No description provided for @winner.
   ///
   /// In ar, this message translates to:

@@ -51,6 +51,8 @@
   "player": "Player",
   "round": "Round",
   "score": "Score",
+  "draw": "Draw",
+  "drawSubtitle": "Same score — no winner",
   "winner": "Winner",
   "howToPlayStep1": "Choose a game mode and enter player names",
   "howToPlayStep2": "Pick categories and number of rounds",

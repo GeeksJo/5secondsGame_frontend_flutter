@@ -72,6 +72,11 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final l10n = AppLocalizations.of(context)!;
     final game = context.watch<GameProvider>();
     final ranked = widget.debugRankedPlayers ?? game.rankedPlayers;
+    final isDraw = widget.debugRankedPlayers != null
+        ? _isDrawFromRanked(ranked)
+        : game.isDraw;
+    int rankAt(int index) =>
+        ranked.where((p) => p.score > ranked[index].score).length + 1;
     final isTablet = ResponsiveLayout.isTablet(context);
     final landscape = ResponsiveLayout.isLandscape(context);
     final maxW = ResponsiveLayout.maxWidthFor(
@@ -121,7 +126,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      l10n.score,
+                      isDraw ? l10n.draw : l10n.score,
                       style: TextStyle(
                         fontFamily: AppFonts.family,
                         color: AppColors.textMuted,
@@ -168,7 +173,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            l10n.score,
+            isDraw ? l10n.draw : l10n.score,
             style: TextStyle(
               fontFamily: AppFonts.family,
               color: AppColors.textMuted,
@@ -206,8 +211,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                         itemBuilder: (context, index) {
                           return PlayerScoreTile(
                             player: ranked[index],
-                            rank: index + 1,
-                            isWinner: index == 0,
+                            rank: rankAt(index),
+                            isWinner: !isDraw && rankAt(index) == 1,
                             isTablet: isTablet,
                           );
                         },
@@ -280,5 +285,11 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         ),
       ),
     );
+  }
+
+  static bool _isDrawFromRanked(List<Player> ranked) {
+    if (ranked.length < 2) return false;
+    final topScore = ranked.first.score;
+    return ranked.where((p) => p.score == topScore).length > 1;
   }
 }

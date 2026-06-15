@@ -39,7 +39,6 @@ Future<void> initializeGameKit(StorageService storage) async {
   // By default, ads are disabled in release builds.
   // This is intentionally a compile-time flag to keep it deterministic per build.
   final adsEnabled = AdsFlag.enabled;
-  print(adsEnabled);
   await GameKit.initialize(
     GameKitConfig(
       locale: persistedLocale,
@@ -170,6 +169,7 @@ Future<void> refreshGameKitAfterResume() async {
   try {
     await GameKit.notifications.initialize();
   } catch (_) {}
+  GameKitAdBridge.preloadInterstitial();
 }
 
 void _listenRemoveAdsTooltip() {
@@ -291,16 +291,22 @@ final class GameKitAdBridge {
     // Interstitials are shown from [presentAfterLevel] directly.
   }
 
+  /// Fire-and-forget interstitial preload (no-op when ads are off or removed).
+  static void preloadInterstitial() {
+    if (!AdsFlag.enabled) return;
+    if (GameKit.iap.adsRemoved.value) return;
+    unawaited(GameKit.ads.loadInterstitial());
+  }
+
   static Future<bool> _loadAndShowInterstitial({
-    Duration timeout = const Duration(seconds: 30),
+    Duration loadTimeout = const Duration(seconds: 4),
   }) async {
-    final deadline = DateTime.now().add(timeout);
-    while (DateTime.now().isBefore(deadline)) {
-      await GameKit.ads.loadInterstitial();
-      if (await GameKit.ads.showInterstitial()) return true;
-      await Future.delayed(const Duration(milliseconds: 400));
-    }
-    return false;
+    try {
+      await GameKit.ads
+          .loadInterstitial()
+          .timeout(loadTimeout, onTimeout: () {});
+    } catch (_) {}
+    return GameKit.ads.showInterstitial();
   }
 
   static Future<void> _present() async {
@@ -311,6 +317,7 @@ final class GameKitAdBridge {
     } finally {
       interstitialPresenting.value = false;
       await GameKit.ads.adClosed();
+      preloadInterstitial();
     }
   }
 
@@ -341,6 +348,7 @@ final class GameKitAdBridge {
     } finally {
       interstitialPresenting.value = false;
       await GameKit.ads.adClosed();
+      preloadInterstitial();
     }
   }
 

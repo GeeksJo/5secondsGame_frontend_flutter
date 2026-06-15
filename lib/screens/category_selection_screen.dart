@@ -11,6 +11,7 @@ import '../theme/app_theme.dart';
 import '../widgets/category_card.dart';
 import '../widgets/locked_category_sheet.dart';
 import '../widgets/responsive_layout.dart';
+import '../services/game_kit_bootstrap.dart';
 import 'stage_start_screen.dart';
 
 class CategorySelectionScreen extends StatefulWidget {
@@ -27,6 +28,14 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
   static const _roundOptions = [1, 3, 5, 7, 10];
   late final Future<List<GameCategory>> _categoriesFuture =
       GameCategory.loadAll();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      GameKitAdBridge.preloadInterstitial();
+    });
+  }
 
   void _onCategoryTap(GameCategory category, bool isLocked) {
     if (isLocked) {
