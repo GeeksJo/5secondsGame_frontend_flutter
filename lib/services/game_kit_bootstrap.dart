@@ -131,7 +131,7 @@ Future<void> initializeGameKit(StorageService storage) async {
   );
 
   if (adsEnabled) {
-    unawaited(GameKit.ads.loadInterstitial());
+    await GameKit.ads.loadInterstitial();
     unawaited(GameKit.ads.loadRewarded());
   }
 
@@ -283,27 +283,34 @@ Future<void> _showRatingFeedbackDialog(BuildContext context) {
 final class GameKitAdBridge {
   GameKitAdBridge._();
 
-  static StreamSubscription<void>? _sub;
-  static Completer<void>? _waiter;
+  /// True while a fullscreen interstitial is loading/showing.
+  /// Banner slots listen to this to avoid iOS platform-view id collisions.
+  static final ValueNotifier<bool> interstitialPresenting = ValueNotifier(false);
 
   static void attach() {
-    if (!AdsFlag.enabled) return;
-    _sub?.cancel();
-    _sub = GameKit.ads.onShouldShowInterstitial.listen((_) {
-      unawaited(_present());
-    });
+    // Interstitials are shown from [presentAfterLevel] directly.
+  }
+
+  static Future<bool> _loadAndShowInterstitial({
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      await GameKit.ads.loadInterstitial();
+      if (await GameKit.ads.showInterstitial()) return true;
+      await Future.delayed(const Duration(milliseconds: 400));
+    }
+    return false;
   }
 
   static Future<void> _present() async {
     if (!AdsFlag.enabled) return;
+    interstitialPresenting.value = true;
     try {
-      await GameKit.ads.loadInterstitial();
-      await GameKit.ads.showInterstitial();
+      await _loadAndShowInterstitial();
     } finally {
+      interstitialPresenting.value = false;
       await GameKit.ads.adClosed();
-      if (_waiter != null && !_waiter!.isCompleted) {
-        _waiter!.complete();
-      }
     }
   }
 
@@ -311,45 +318,31 @@ final class GameKitAdBridge {
     if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
 
-    var interstitialRequested = false;
-    late final StreamSubscription<void> probe;
-    probe = GameKit.ads.onShouldShowInterstitial.listen((_) {
-      interstitialRequested = true;
+    var shouldShow = false;
+    final sub = GameKit.ads.onShouldShowInterstitial.listen((_) {
+      shouldShow = true;
     });
-
-    _waiter = Completer<void>();
     try {
       await GameKit.ads.levelCompleted(failed: failed);
-      await probe.cancel();
-
-      if (!interstitialRequested) return;
-
-      await _waiter!.future.timeout(
-        const Duration(seconds: 45),
-        onTimeout: () {},
-      );
     } finally {
-      await probe.cancel();
-      if (_waiter != null && !_waiter!.isCompleted) {
-        _waiter!.complete();
-      }
-      _waiter = null;
+      await sub.cancel();
     }
+
+    if (!shouldShow) return;
+    await _present();
   }
 
   static Future<void> presentOnAbandonHome() async {
     if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
+    interstitialPresenting.value = true;
     try {
-      await GameKit.ads.loadInterstitial();
-      await GameKit.ads.showInterstitial();
+      await _loadAndShowInterstitial();
     } finally {
+      interstitialPresenting.value = false;
       await GameKit.ads.adClosed();
     }
   }
 
-  static Future<void> detach() async {
-    await _sub?.cancel();
-    _sub = null;
-  }
+  static Future<void> detach() async {}
 }
