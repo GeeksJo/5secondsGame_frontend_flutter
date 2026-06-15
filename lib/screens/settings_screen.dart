@@ -28,7 +28,7 @@ class SettingsScreen extends StatelessWidget {
 
     final maxW = ResponsiveLayout.maxWidthFor(
       context,
-      phone: 520,
+      phone: double.infinity,
       tabletPortrait: 640,
       tabletLandscape: 760,
     );
@@ -36,7 +36,7 @@ class SettingsScreen extends StatelessWidget {
 
     final listPad = isTablet
         ? const EdgeInsets.fromLTRB(12, 24, 12, 24)
-        : AppSpacing.screenPadding;
+        : EdgeInsets.symmetric(vertical: 16.0);
 
     return Scaffold(
       appBar: AppBar(
@@ -62,34 +62,41 @@ class SettingsScreen extends StatelessWidget {
             child: ListView(
               padding: listPad,
               children: [
-                GameKitSettingSectionWidget(
-                  palette: palette,
-                  margin: EdgeInsets.zero,
-                  headerIcon: Icons.apps_rounded,
-                  headerTitle: l10n.sectionAppInfo,
-                  fontFamily: AppFonts.family,
-                  child: GameKitSettingItem(
-                    palette: palette,
-                    fontFamily: AppFonts.family,
-                    icon: Icons.celebration_outlined,
-                    title: l10n.appName,
-                    subtitle: l10n.appInfoLine,
-                    showDivider: false,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                  child: Column(
+                    children: [
+                      GameKitSettingSectionWidget(
+                        palette: palette,
+                        margin: EdgeInsets.zero,
+                        headerIcon: Icons.apps_rounded,
+                        headerTitle: l10n.sectionAppInfo,
+                        fontFamily: AppFonts.family,
+                        child: GameKitSettingItem(
+                          palette: palette,
+                          fontFamily: AppFonts.family,
+                          icon: Icons.celebration_outlined,
+                          title: l10n.appName,
+                          subtitle: l10n.appInfoLine,
+                          showDivider: false,
+                        ),
+                      ),
+                      SizedBox(height: _sectionSpacing),
+                      GameKitSettingSectionWidget(
+                        palette: palette,
+                        margin: EdgeInsets.zero,
+                        fontFamily: AppFonts.family,
+                        child: _soundTile(context, localeProvider, palette),
+                      ),
+                      SizedBox(height: _sectionSpacing),
+                      _MoreGamesCard(
+                        isTablet: isTablet,
+                        title: l10n.moreGames,
+                        subtitle: l10n.moreGamesSubtitle,
+                        onTap: () => showAppCrossPromoSheet(context),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(height: _sectionSpacing),
-                GameKitSettingSectionWidget(
-                  palette: palette,
-                  margin: EdgeInsets.zero,
-                  fontFamily: AppFonts.family,
-                  child: _soundTile(context, localeProvider, palette),
-                ),
-                SizedBox(height: _sectionSpacing),
-                _MoreGamesCard(
-                  isTablet: isTablet,
-                  title: l10n.moreGames,
-                  subtitle: l10n.moreGamesSubtitle,
-                  onTap: () => showAppCrossPromoSheet(context),
                 ),
                 SizedBox(height: _sectionSpacing),
                 const GameKitSettingsBody(
