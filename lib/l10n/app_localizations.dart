@@ -458,6 +458,12 @@ abstract class AppLocalizations {
   /// **'متابعة'**
   String get resume;
 
+  /// No description provided for @editPlayers.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الأسماء'**
+  String get editPlayers;
+
   /// No description provided for @appSubtitle.
   ///
   /// In ar, this message translates to:

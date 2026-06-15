@@ -190,6 +190,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get resume => 'متابعة';
 
   @override
+  String get editPlayers => 'تعديل الأسماء';
+
+  @override
   String get appSubtitle => '٥ ثوانٍ';
 
   @override

@@ -24,6 +24,7 @@ import '../widgets/red_button.dart';
 import '../widgets/responsive_layout.dart';
 import 'home_screen.dart';
 import 'pass_screen.dart';
+import 'player_setup_screen.dart';
 import 'scoreboard_screen.dart';
 
 class QuestionScreen extends StatefulWidget {
@@ -493,9 +494,26 @@ class _QuestionScreenState extends State<QuestionScreen>
     });
   }
 
+  void _exitToPlayerSetup() {
+    final names = context
+        .read<GameProvider>()
+        .players
+        .map((player) => player.name)
+        .toList();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PlayerSetupScreen(initialNames: names),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
   void _showPauseMenu() {
     _togglePause();
     final l10n = AppLocalizations.of(context)!;
+    final isFreeForAll =
+        context.read<GameProvider>().mode == GameMode.freeForAll;
 
     showDialog(
       context: context,
@@ -580,6 +598,41 @@ class _QuestionScreenState extends State<QuestionScreen>
                         child: Text(l10n.resume),
                       ),
                     ),
+                    if (isFreeForAll) ...[
+                      SizedBox(height: isPad ? 14 : 10),
+                      SizedBox(
+                        width: double.infinity,
+                        height: isPad ? 62.0 : 54,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(dialogContext);
+                            _exitToPlayerSetup();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: AppColors.textSecondary,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.pill,
+                              ),
+                            ),
+                            textStyle: TextStyle(
+                              fontFamily: AppFonts.family,
+                              fontSize: isPad ? 21 : 17,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          child: Text(
+                            l10n.editPlayers,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                     SizedBox(height: isPad ? 14 : 10),
                     SizedBox(
                       width: double.infinity,

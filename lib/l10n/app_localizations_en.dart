@@ -195,6 +195,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resume => 'Resume';
 
   @override
+  String get editPlayers => 'Edit Players';
+
+  @override
   String get appSubtitle => '5 Seconds';
 
   @override

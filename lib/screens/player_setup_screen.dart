@@ -8,7 +8,9 @@ import '../widgets/responsive_layout.dart';
 import 'category_selection_screen.dart';
 
 class PlayerSetupScreen extends StatefulWidget {
-  const PlayerSetupScreen({super.key});
+  final List<String>? initialNames;
+
+  const PlayerSetupScreen({super.key, this.initialNames});
 
   @override
   State<PlayerSetupScreen> createState() => _PlayerSetupScreenState();
@@ -20,10 +22,17 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
   @override
   void initState() {
     super.initState();
-    final mode = context.read<GameProvider>().mode;
-    final count = mode == GameMode.oneVsOne ? 2 : 3;
-    for (var i = 0; i < count; i++) {
-      _controllers.add(TextEditingController());
+    final initialNames = widget.initialNames;
+    if (initialNames != null && initialNames.isNotEmpty) {
+      for (final name in initialNames) {
+        _controllers.add(TextEditingController(text: name));
+      }
+    } else {
+      final mode = context.read<GameProvider>().mode;
+      final count = mode == GameMode.oneVsOne ? 2 : 3;
+      for (var i = 0; i < count; i++) {
+        _controllers.add(TextEditingController());
+      }
     }
   }
 
