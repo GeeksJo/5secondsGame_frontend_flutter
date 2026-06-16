@@ -5,32 +5,32 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000185">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000195">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: Switch to android beta lane" time="9.5e-05">
+      <testcase classname="fastlane.lanes" name="1: Switch to android beta lane" time="9.6e-05">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: google_play_track_version_codes" time="4.850961">
+      <testcase classname="fastlane.lanes" name="2: google_play_track_version_codes" time="2.793064">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: google_play_track_version_codes" time="2.814027">
+      <testcase classname="fastlane.lanes" name="3: google_play_track_version_codes" time="1.836191">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: cd /Users/mohammedadel/Work/FlutterProjects/5seconds_app/seconds_app &amp;&amp; flutter pub get" time="2.451313">
+      <testcase classname="fastlane.lanes" name="4: cd /Users/mohammedadel/Work/FlutterProjects/5seconds_app/seconds_app &amp;&amp; flutter pub get" time="1.684387">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: cd /Users/mohammedadel/Work/FlutterProjects/5seconds_app/seconds_app &amp;&amp; flutter build appbundle --release" time="56.541617">
+      <testcase classname="fastlane.lanes" name="5: cd /Users/mohammedadel/Work/FlutterProjects/5seconds_app/seconds_app &amp;&amp; flutter build appbundle --release" time="8.837891">
         
       </testcase>
     
