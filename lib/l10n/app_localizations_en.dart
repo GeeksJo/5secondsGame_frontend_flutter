@@ -30,7 +30,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get english => 'English';
 
   @override
-  String get sound => 'Sound';
+  String get haptics => 'Haptics';
+
+  @override
+  String get hapticsDescription =>
+      'Vibration feedback for taps and game events.';
 
   @override
   String get answerTime => 'Answer time';

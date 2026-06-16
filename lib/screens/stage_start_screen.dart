@@ -1,14 +1,12 @@
 import 'dart:math' as math;
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:game_kit/game_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
-import '../providers/locale_provider.dart';
 import '../services/game_kit_bootstrap.dart';
 import '../theme/app_theme.dart';
 import '../widgets/responsive_layout.dart';
@@ -30,7 +28,6 @@ class _StageStartScreenState extends State<StageStartScreen>
   late final bool _ffa;
   late final int _countFrom;
   late final AnimationController _controller;
-  final AudioPlayer _audio = AudioPlayer();
   late int _displayNumber;
 
   @override
@@ -52,7 +49,7 @@ class _StageStartScreenState extends State<StageStartScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       GameKitAdBridge.preloadInterstitial();
-      HapticFeedback.lightImpact();
+      GameKit.haptics.lightTap();
       _playTickIfSound();
       _controller.forward();
     });
@@ -62,7 +59,6 @@ class _StageStartScreenState extends State<StageStartScreen>
   void dispose() {
     _controller.removeListener(_onTick);
     _controller.dispose();
-    _audio.dispose();
     super.dispose();
   }
 
@@ -71,20 +67,18 @@ class _StageStartScreenState extends State<StageStartScreen>
     final n = (_countFrom - (v * _countFrom).floor()).clamp(1, _countFrom);
     if (n != _displayNumber) {
       setState(() => _displayNumber = n);
-      HapticFeedback.lightImpact();
+      GameKit.haptics.lightTap();
       _playTickIfSound();
     }
   }
 
   void _playTickIfSound() {
     if (_ffa) return;
-    final sound = context.read<LocaleProvider>().soundEnabled;
-    if (!sound) return;
-    _audio.play(AssetSource('sounds/tick.wav')).catchError((_) {});
+    GameKit.sounds.countdownTick();
   }
 
   void _onComplete() {
-    HapticFeedback.mediumImpact();
+    GameKit.haptics.milestoneSuccess();
     if (!mounted) return;
     final game = context.read<GameProvider>();
     if (game.players.isEmpty) {

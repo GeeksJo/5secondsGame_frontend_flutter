@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:game_kit/game_kit.dart';
 import '../theme/app_theme.dart';
 import 'responsive_layout.dart';
 
@@ -40,7 +40,8 @@ class _RedButtonState extends State<RedButton> {
     if (!widget.enabled) return;
     if (_tapLocked) return;
     _tapLocked = true;
-    HapticFeedback.mediumImpact();
+    GameKit.sounds.lightTap();
+    GameKit.haptics.lightTap();
     widget.onPressed();
     Future<void>.delayed(const Duration(milliseconds: 220), () {
       _tapLocked = false;

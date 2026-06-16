@@ -58,6 +58,7 @@ class _PassScreenState extends State<PassScreen>
 
   void _goToNextQuestion() {
     if (!mounted) return;
+    GameKit.sounds.validAction();
     GameKit.haptics.validAction();
     Navigator.pushReplacement(
       context,

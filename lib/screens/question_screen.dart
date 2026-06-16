@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:audioplayers/audioplayers.dart';
-import 'package:game_kit/game_kit.dart';
+import 'package:game_kit/game_kit.dart' hide GameKitBannerSlot;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
@@ -46,10 +44,11 @@ class _QuestionScreenState extends State<QuestionScreen>
   String? _flipName;
   String? _flipQuestionText;
   late int _answerSeconds;
-  final AudioPlayer _audioPlayer = AudioPlayer();
   bool _introComplete = false;
   int? _introBeat;
+  bool _countdownUrgencyActive = false;
 
+  static const _urgencyWindowSeconds = 3;
   static const _introTickGap = Duration(milliseconds: 420);
   static const _afterLastIntroTick = Duration(milliseconds: 160);
   static const _turnFlipDuration = Duration(milliseconds: 680);
@@ -86,6 +85,7 @@ class _QuestionScreenState extends State<QuestionScreen>
         _onTimeout();
       }
     });
+    _timerController.addListener(_onTimerTick);
     final isFFA = context.read<GameProvider>().mode == GameMode.freeForAll;
     if (isFFA) {
       _introComplete = true;
@@ -105,32 +105,59 @@ class _QuestionScreenState extends State<QuestionScreen>
 
   @override
   void dispose() {
+    _timerController.removeListener(_onTimerTick);
+    unawaited(GameKit.sounds.stopCountdownUrgency());
     _timerController.dispose();
     _turnFlipController.dispose();
-    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  void _onTimerTick() => _syncCountdownUrgency();
+
+  void _syncCountdownUrgency() {
+    if (_answered || _paused || !_introComplete) {
+      _stopCountdownUrgency();
+      return;
+    }
+    if (_answerSeconds <= 5) {
+      _stopCountdownUrgency();
+      return;
+    }
+    final remaining =
+        _answerSeconds - (_timerController.value * _answerSeconds);
+    final inWindow = remaining <= _urgencyWindowSeconds;
+    if (inWindow && !_countdownUrgencyActive) {
+      _countdownUrgencyActive = true;
+      unawaited(GameKit.sounds.startCountdownUrgency());
+    } else if (!inWindow && _countdownUrgencyActive) {
+      _stopCountdownUrgency();
+    }
+  }
+
+  void _stopCountdownUrgency() {
+    if (!_countdownUrgencyActive) return;
+    _countdownUrgencyActive = false;
+    unawaited(GameKit.sounds.stopCountdownUrgency());
   }
 
   void _introHaptic(int index) {
     if (index == 0) {
-      HapticFeedback.lightImpact();
+      GameKit.haptics.lightTap();
     } else {
-      HapticFeedback.mediumImpact();
+      GameKit.haptics.milestoneSuccess();
     }
   }
 
-  Future<void> _playGoSound() async {
-    final soundEnabled = context.read<LocaleProvider>().soundEnabled;
-    if (!soundEnabled) return;
-    await _audioPlayer.play(AssetSource('sounds/go.wav'));
+  void _playGoSound() {
+    GameKit.sounds.go();
   }
 
   Future<void> _ffaStartAnswerPhase() async {
     if (!mounted || _answered) return;
     GameKitAdBridge.preloadInterstitial();
-    await _playGoSound();
+    _playGoSound();
     if (!mounted || _answered) return;
-    HapticFeedback.mediumImpact();
+    GameKit.haptics.milestoneSuccess();
     _timerController.forward(from: 0);
   }
 
@@ -142,14 +169,11 @@ class _QuestionScreenState extends State<QuestionScreen>
       _introComplete = false;
       _introBeat = introBeats;
     });
-    final soundEnabled = context.read<LocaleProvider>().soundEnabled;
     for (var i = 0; i < introBeats; i++) {
       if (!mounted || _answered) return;
       final beat = introBeats - i;
       setState(() => _introBeat = beat);
-      if (soundEnabled) {
-        await _audioPlayer.play(AssetSource('sounds/tick.wav'));
-      }
+      GameKit.sounds.countdownTick();
       _introHaptic(i);
       if (i < introBeats - 1) {
         await Future<void>.delayed(_introTickGap);
@@ -158,9 +182,9 @@ class _QuestionScreenState extends State<QuestionScreen>
     if (!mounted || _answered) return;
     await Future<void>.delayed(_afterLastIntroTick);
     if (!mounted || _answered) return;
-    await _playGoSound();
+    _playGoSound();
     if (!mounted || _answered) return;
-    HapticFeedback.heavyImpact();
+    GameKit.haptics.invalidAction();
     setState(() {
       _introBeat = null;
       _introComplete = true;
@@ -526,14 +550,14 @@ class _QuestionScreenState extends State<QuestionScreen>
 
   void _openOtherGames() {
     if (_answered || _paused || _turnFlipping || !_introComplete) return;
-    HapticFeedback.lightImpact();
+    GameKit.haptics.lightTap();
     unawaited(showAppCrossPromoSheet(context));
   }
 
   Future<void> _removeAdsFromHeader() async {
     if (_answered || _paused || _turnFlipping || !_introComplete) return;
     if (GameKit.iap.adsRemoved.value) return;
-    HapticFeedback.lightImpact();
+    GameKit.haptics.lightTap();
 
     final l10n = AppLocalizations.of(context)!;
     final price = GameKit.iap.getFormattedPrice(GameKitProducts.removeAds);
@@ -563,8 +587,10 @@ class _QuestionScreenState extends State<QuestionScreen>
       _paused = !_paused;
       if (_paused) {
         _timerController.stop();
+        _stopCountdownUrgency();
       } else {
         _timerController.forward();
+        _syncCountdownUrgency();
       }
     });
   }
@@ -759,6 +785,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     if (_answered || _paused || _turnFlipping || !_introComplete) return;
     _answered = true;
     _timerController.stop();
+    _stopCountdownUrgency();
 
     final game = context.read<GameProvider>();
     final locale = context.read<LocaleProvider>().locale.languageCode;
@@ -768,6 +795,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     final coinProvider = context.read<CoinProvider>();
     final isGameOver = game.answerCorrect();
     coinProvider.addCoins(1);
+    GameKit.sounds.validAction();
     GameKit.haptics.validAction();
     unawaited(_notifyRatingAfterCorrectAnswer());
 
@@ -791,7 +819,9 @@ class _QuestionScreenState extends State<QuestionScreen>
   void _onTimeout() {
     if (_answered || _turnFlipping) return;
     _answered = true;
-    HapticFeedback.heavyImpact();
+    _stopCountdownUrgency();
+    GameKit.sounds.invalidAction();
+    GameKit.haptics.invalidAction();
 
     final game = context.read<GameProvider>();
     final locale = context.read<LocaleProvider>().locale.languageCode;
@@ -863,7 +893,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     required String prevQuestionText,
   }) {
     if (_turnFlipping) return;
-    HapticFeedback.mediumImpact();
+    GameKit.haptics.milestoneSuccess();
     setState(() {
       _turnFlipping = true;
       _flipFrom = prevFlip;

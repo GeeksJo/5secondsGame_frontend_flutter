@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:game_kit/game_kit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/app_theme.dart';
@@ -26,7 +27,7 @@ import 'storage_service.dart';
 /// - [GameKit.iap] — purchases / restore / prices in [SettingsScreen] & [QuestionScreen].
 /// - [GameKit.crossPromo] — catalog sheet; badge on home settings.
 /// - [GameKit.share] — settings share row.
-/// - [GameKit.haptics] — question & scoreboard.
+/// - [GameKit.haptics] / [GameKit.sounds] — gameplay feedback (countdown, answers, UI).
 Future<void> initializeGameKit(StorageService storage) async {
   final persistedLocale = Locale(storage.getLocale());
 
@@ -101,7 +102,7 @@ Future<void> initializeGameKit(StorageService storage) async {
           ),
         ),
         interstitialMaxPerSession: 8,
-        interstitialCooldownSeconds: 30,
+        interstitialCooldownSeconds: 60,
       ),
       // [minLevel] is compared to a *cumulative* success count (see
       // [StorageService.incrementRatingSuccessCount]), not in-game round index.
@@ -124,10 +125,13 @@ Future<void> initializeGameKit(StorageService storage) async {
       storage: const StorageConfig(
         backend: GameKitStoreBackend.sharedPreferences,
       ),
-      haptics: HapticsConfig(isEnabled: () => storage.getSoundEnabled()),
+      sound: const SoundConfig(respectSilentMode: false),
+      haptics: HapticsConfig(isEnabled: () => storage.getHapticsEnabled()),
       crossPromoAppIdentifier: 'com.majoon.yalla',
     ),
   );
+
+  await _migrateAudioHapticsPreferences(storage);
 
   if (adsEnabled) {
     await GameKit.ads.loadInterstitial();
@@ -143,6 +147,26 @@ Future<void> initializeGameKit(StorageService storage) async {
   _listenRemoveAdsTooltip();
 }
 
+/// Copies legacy [sound_enabled] into GameKit preferences and seeds haptics.
+Future<void> _migrateAudioHapticsPreferences(StorageService storage) async {
+  const kitSoundKey = 'game_kit.preferences.soundsEnabled';
+  const hapticsMigratedKey = 'haptics_pref_migrated_v1';
+
+  final prefs = await SharedPreferences.getInstance();
+  if (!prefs.containsKey(kitSoundKey)) {
+    final legacy = storage.getLegacySoundEnabledOrNull() ?? true;
+    await GameKit.preferences.setSoundsEnabled(legacy);
+  }
+
+  if (prefs.getBool(hapticsMigratedKey) != true) {
+    final legacy = storage.getLegacySoundEnabledOrNull();
+    if (legacy != null) {
+      await storage.setHapticsEnabled(legacy);
+    }
+    await prefs.setBool(hapticsMigratedKey, true);
+  }
+}
+
 /// Moves `StorageService` donation total into [GameKit.iap] once, if present.
 Future<void> _migrateLegacyDonationTotal(StorageService storage) async {
   try {
@@ -153,7 +177,15 @@ Future<void> _migrateLegacyDonationTotal(StorageService storage) async {
       await storage.clearDonationTotal();
       return;
     }
-    await GameKit.iap.addDonation(GameKitProducts.donationSmall, legacy);
+    final prefs = await SharedPreferences.getInstance();
+    const prefix = 'game_kit.iap.';
+    final existing = prefs.getInt('${prefix}totalDonationsCents');
+    if (existing == null || existing <= 0) {
+      await prefs.setInt(
+        '${prefix}totalDonationsCents',
+        (legacy * 100).round(),
+      );
+    }
     await storage.clearDonationTotal();
   } catch (_) {}
 }
@@ -285,7 +317,9 @@ final class GameKitAdBridge {
 
   /// True while a fullscreen interstitial is loading/showing.
   /// Banner slots listen to this to avoid iOS platform-view id collisions.
-  static final ValueNotifier<bool> interstitialPresenting = ValueNotifier(false);
+  static final ValueNotifier<bool> interstitialPresenting = ValueNotifier(
+    false,
+  );
 
   static void attach() {
     // Interstitials are shown from [presentAfterLevel] directly.
@@ -302,9 +336,10 @@ final class GameKitAdBridge {
     Duration loadTimeout = const Duration(seconds: 4),
   }) async {
     try {
-      await GameKit.ads
-          .loadInterstitial()
-          .timeout(loadTimeout, onTimeout: () {});
+      await GameKit.ads.loadInterstitial().timeout(
+        loadTimeout,
+        onTimeout: () {},
+      );
     } catch (_) {}
     return GameKit.ads.showInterstitial();
   }

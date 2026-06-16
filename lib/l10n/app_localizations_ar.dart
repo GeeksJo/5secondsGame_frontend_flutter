@@ -30,7 +30,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get english => 'English';
 
   @override
-  String get sound => 'الصوت';
+  String get haptics => 'الاهتزاز';
+
+  @override
+  String get hapticsDescription => 'ردود فعل لمسية للنقرات وأحداث اللعب.';
 
   @override
   String get answerTime => 'وقت الإجابة';

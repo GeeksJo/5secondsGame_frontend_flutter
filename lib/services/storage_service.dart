@@ -5,7 +5,8 @@ class StorageService {
   static const _purchasedKey = 'purchased_categories';
   static const _rentedPrefix = 'rented_';
   static const _localeKey = 'locale';
-  static const _soundKey = 'sound_enabled';
+  static const _legacySoundKey = 'sound_enabled';
+  static const _hapticsKey = 'haptics_enabled';
   static const _questionTimerKey = 'question_timer_seconds';
   static const _donationTotalKey = 'donation_total_amount';
   static const _ratingSuccessCountKey = 'rating_success_count';
@@ -44,10 +45,16 @@ class StorageService {
 
   Future<void> setLocale(String locale) => _prefs.setString(_localeKey, locale);
 
-  bool getSoundEnabled() => _prefs.getBool(_soundKey) ?? true;
+  bool getHapticsEnabled() => _prefs.getBool(_hapticsKey) ?? true;
 
-  Future<void> setSoundEnabled(bool enabled) =>
-      _prefs.setBool(_soundKey, enabled);
+  Future<void> setHapticsEnabled(bool enabled) =>
+      _prefs.setBool(_hapticsKey, enabled);
+
+  /// Legacy [sound_enabled] value for one-time migration into GameKit preferences.
+  bool? getLegacySoundEnabledOrNull() {
+    if (!_prefs.containsKey(_legacySoundKey)) return null;
+    return _prefs.getBool(_legacySoundKey);
+  }
 
   int getQuestionTimerSeconds() {
     const defaultSeconds = 5;

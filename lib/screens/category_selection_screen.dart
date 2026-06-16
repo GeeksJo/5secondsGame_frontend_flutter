@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:game_kit/game_kit.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
@@ -43,7 +43,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
       return;
     }
 
-    HapticFeedback.selectionClick();
+    GameKit.haptics.validAction();
     setState(() {
       if (_selected.contains(category.key)) {
         _selected.remove(category.key);
@@ -256,7 +256,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                         ),
                         child: GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            GameKit.haptics.lightTap();
                             setState(() => _selectedRounds = n);
                           },
                           child: AnimatedContainer(

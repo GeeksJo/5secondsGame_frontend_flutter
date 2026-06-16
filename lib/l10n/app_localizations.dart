@@ -140,11 +140,17 @@ abstract class AppLocalizations {
   /// **'English'**
   String get english;
 
-  /// No description provided for @sound.
+  /// No description provided for @haptics.
   ///
   /// In ar, this message translates to:
-  /// **'الصوت'**
-  String get sound;
+  /// **'الاهتزاز'**
+  String get haptics;
+
+  /// No description provided for @hapticsDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'ردود فعل لمسية للنقرات وأحداث اللعب.'**
+  String get hapticsDescription;
 
   /// No description provided for @answerTime.
   ///

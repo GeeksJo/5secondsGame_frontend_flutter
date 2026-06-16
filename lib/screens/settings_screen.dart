@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 
-import '../providers/locale_provider.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_cross_promo.dart';
 import '../widgets/responsive_layout.dart';
@@ -16,7 +18,6 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final localeProvider = context.watch<LocaleProvider>();
     final isTablet = ResponsiveLayout.isTablet(context);
     final palette = GameKit.settingsUi != null
         ? GameKitSettingsPalette.fromUiConfig(GameKit.settingsUi!)
@@ -86,7 +87,7 @@ class SettingsScreen extends StatelessWidget {
                         palette: palette,
                         margin: EdgeInsets.zero,
                         fontFamily: AppFonts.family,
-                        child: _soundTile(context, localeProvider, palette),
+                        child: _HapticsSettingTile(palette: palette),
                       ),
                       SizedBox(height: _sectionSpacing),
                       _MoreGamesCard(
@@ -104,7 +105,6 @@ class SettingsScreen extends StatelessWidget {
                   physics: NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   sectionSpacing: _sectionSpacing,
-                  maxWidth: double.infinity,
                 ),
                 // if (kDebugMode) ...[
                 //   SizedBox(height: _sectionSpacing),
@@ -151,24 +151,51 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _soundTile(
-    BuildContext context,
-    LocaleProvider localeProvider,
-    GameKitSettingsPalette palette,
-  ) {
+}
+
+class _HapticsSettingTile extends StatefulWidget {
+  const _HapticsSettingTile({required this.palette});
+
+  final GameKitSettingsPalette palette;
+
+  @override
+  State<_HapticsSettingTile> createState() => _HapticsSettingTileState();
+}
+
+class _HapticsSettingTileState extends State<_HapticsSettingTile> {
+  late bool _hapticsEnabled;
+
+  @override
+  void initState() {
+    super.initState();
+    _hapticsEnabled = context.read<StorageService>().getHapticsEnabled();
+  }
+
+  Future<void> _setHapticsEnabled(bool enabled) async {
+    setState(() => _hapticsEnabled = enabled);
+    await context.read<StorageService>().setHapticsEnabled(enabled);
+    if (enabled) {
+      GameKit.haptics.lightTap();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return GameKitSettingItem(
-      palette: palette,
+      palette: widget.palette,
       fontFamily: AppFonts.family,
-      icon: localeProvider.soundEnabled ? Icons.volume_up : Icons.volume_off,
-      title: l10n.sound,
+      icon: _hapticsEnabled ? Icons.vibration : Icons.vibration_outlined,
+      title: l10n.haptics,
+      subtitle: l10n.hapticsDescription,
       showDivider: false,
-      trailing: Switch(
-        value: localeProvider.soundEnabled,
-        onChanged: (_) => localeProvider.toggleSound(),
-        activeTrackColor: AppColors.textHint,
-        activeThumbColor: AppColors.textPrimary,
+      trailing: Switch.adaptive(
+        value: _hapticsEnabled,
+        onChanged: (enabled) => unawaited(_setHapticsEnabled(enabled)),
+        activeThumbColor: widget.palette.seed,
+        activeTrackColor: widget.palette.seed.withValues(alpha: 0.45),
       ),
+      onTap: () => unawaited(_setHapticsEnabled(!_hapticsEnabled)),
     );
   }
 }

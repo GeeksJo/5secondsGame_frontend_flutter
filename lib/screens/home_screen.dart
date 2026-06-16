@@ -567,16 +567,12 @@ class _SettingsTopChip extends StatefulWidget {
 }
 
 class _SettingsTopChipState extends State<_SettingsTopChip> {
-  late bool _badge;
   StreamSubscription<bool>? _crossPromoSub;
 
   @override
   void initState() {
     super.initState();
-    _badge = GameKit.crossPromo.hasNewGame;
-    _crossPromoSub = GameKit.crossPromo.hasNewGameChanges.listen((show) {
-      if (mounted) setState(() => _badge = show);
-    });
+    _crossPromoSub = GameKit.crossPromo.hasNewGameChanges.listen((show) {});
   }
 
   @override
@@ -615,19 +611,6 @@ class _SettingsTopChipState extends State<_SettingsTopChip> {
             ),
           ),
         ),
-        if (_badge)
-          Positioned(
-            right: -1,
-            top: -1,
-            child: Container(
-              width: 10,
-              height: 10,
-              decoration: const BoxDecoration(
-                color: Colors.redAccent,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
       ],
     );
   }
