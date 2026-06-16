@@ -19,7 +19,10 @@ dependencies:
   url_launcher: ^6.3.1
   flutter_dotenv: ^5.2.1
   game_kit:
-    path: ../gamekit_package
+    git:
+      url: https://github.com/GeeksJo/gameKit_package_flutter.git
+      ref: development
+ 
 
 dev_dependencies:
   flutter_test:

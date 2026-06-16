@@ -336,9 +336,11 @@ packages:
   game_kit:
     dependency: "direct main"
     description:
-      path: "../gamekit_package"
-      relative: true
-    source: path
+      path: "."
+      ref: development
+      resolved-ref: "63e9b4dc02020e392630d633fe4de6c77604328d"
+      url: "https://github.com/GeeksJo/gameKit_package_flutter.git"
+    source: git
     version: "0.1.0-dev"
   google_mobile_ads:
     dependency: "direct main"
