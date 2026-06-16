@@ -165,6 +165,7 @@ class _HomePortraitScrollBody extends StatelessWidget {
                           ),
                         ),
                       ),
+                      GameKitRemoveAdsIconButton(height: 40, width: 40),
                     ],
                   ),
                 ),

@@ -74,7 +74,7 @@ Future<void> initializeGameKit(StorageService storage) async {
       ),
       ads: AdsConfig(
         interstitialEveryNLevels: 1,
-        adMobEnvironment: AdMobUnitEnvironment.prod,
+        adMobEnvironment: AdMobUnitEnvironment.test,
         prodAdMobUnitIds: AdMobProdUnitIds(
           interstitialAndroid: envOr(
             'ADMOB_ANDROID_INTERSTITIAL_ID',
