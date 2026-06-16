@@ -1,0 +1,2 @@
+package_name(ENV["APP_PACKAGE_NAME"] || "com.geeksjo.didYouKnow")
+json_key_file(ENV["PLAY_JSON_KEY_PATH"] || ENV["JSON_FILE_PATH"])

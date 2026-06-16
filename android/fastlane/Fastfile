@@ -1,0 +1,148 @@
+default_platform(:android)
+
+platform :android do
+  def flutter_project_root
+    File.expand_path("../..", Dir.pwd)
+  end
+
+  def flutter_pubspec_file
+    File.join(flutter_project_root, "pubspec.yaml")
+  end
+
+  def aab_output_path
+    File.join(flutter_project_root, "build/app/outputs/bundle/release/app-release.aab")
+  end
+
+  def play_package_name
+    ENV["APP_PACKAGE_NAME"]
+  end
+
+  def play_json_key_path
+    ENV["PLAY_JSON_KEY_PATH"]
+  end
+
+  # Reads version from pubspec.yaml (format: versionName+versionCode).
+  def read_android_versions
+    s = File.read(flutter_pubspec_file)
+    match = s.match(/^version:\s*([^\s+]+)\+(\d+)\s*$/)
+    return [nil, nil] unless match
+
+    [match[2].to_i, match[1].to_s]
+  end
+
+  def track_max_version_code(track:)
+    UI.user_error!("Missing APP_PACKAGE_NAME in android/fastlane/.env") if play_package_name.to_s.strip.empty?
+    UI.user_error!("Missing PLAY_JSON_KEY_PATH in android/fastlane/.env") if play_json_key_path.to_s.strip.empty?
+
+    version_codes = google_play_track_version_codes(
+      package_name: play_package_name,
+      track: track,
+      json_key: play_json_key_path
+    )
+    version_codes&.max.to_i
+  rescue => e
+    # fastlane < 2.235 crashes with NoMethodError when a track has no releases.
+    if e.is_a?(NoMethodError) || e.to_s.include?("flat_map")
+      UI.important("No releases on track '#{track}' (treating max version code as 0)")
+      return 0
+    end
+    raise e
+  end
+
+  def next_play_version_code(track:)
+    track_max_version_code(track: track) + 1
+  end
+
+  def next_play_version_code_from_tracks(tracks:)
+    UI.user_error!("tracks must not be empty") if tracks.nil? || tracks.empty?
+    tracks.map { |t| track_max_version_code(track: t) }.max.to_i + 1
+  end
+
+  def set_android_versions!(version_code:)
+    path = flutter_pubspec_file
+    s = File.read(path)
+    version_name = "1.0.#{version_code}"
+    updated = s.sub(/^version:\s*[^\n]+\s*$/, "version: #{version_name}+#{version_code}")
+    UI.user_error!("Couldn't update version in #{path}") if updated == s
+
+    File.write(path, updated)
+  end
+
+  def build_android_aab!
+    sh("cd #{flutter_project_root} && flutter pub get")
+    sh("cd #{flutter_project_root} && flutter build appbundle --release")
+  end
+
+  def version_code_already_used_error?(e)
+    e.to_s.include?("Version code") && e.to_s.include?("has already been used")
+  end
+
+  desc "Upload a release AAB to Play Console internal track"
+  lane :beta do
+    _current_code, _current_name = read_android_versions
+    UI.user_error!("Couldn't read version from #{flutter_pubspec_file} (expected version: x.y.z+code)") if _current_code.nil?
+
+    # Use production as the "source of truth" but also guard against internal already having a higher code.
+    new_code = next_play_version_code_from_tracks(tracks: ["production", "internal"])
+
+    retries = 0
+    max_retries = 10
+    begin
+      set_android_versions!(version_code: new_code)
+      build_android_aab!
+      upload_to_play_store(
+        track: "internal",
+        aab: aab_output_path,
+        skip_upload_metadata: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        skip_upload_changelogs: true
+      )
+      UI.success("Play Console upload complete ✅ track=internal versionCode=#{new_code} versionName=1.0.#{new_code}")
+    rescue => e
+      raise e unless version_code_already_used_error?(e)
+      retries += 1
+      raise e if retries > max_retries
+      new_code += 1
+      UI.important("Play rejected versionCode as used. Retrying with versionCode #{new_code} (versionName 1.0.#{new_code})")
+      retry
+    end
+  end
+
+  desc "Upload a release AAB to Play Console production track"
+  lane :production do
+    _current_code, _current_name = read_android_versions
+    UI.user_error!("Couldn't read version from #{flutter_pubspec_file} (expected version: x.y.z+code)") if _current_code.nil?
+
+    new_code = next_play_version_code(track: "production")
+
+    retries = 0
+    max_retries = 10
+    begin
+      set_android_versions!(version_code: new_code)
+      build_android_aab!
+      upload_to_play_store(
+        track: "production",
+        release_status: "completed",
+        aab: aab_output_path,
+        skip_upload_metadata: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        skip_upload_changelogs: true
+      )
+      UI.success("Play Console upload complete ✅ track=production status=completed versionCode=#{new_code} versionName=1.0.#{new_code}")
+    rescue => e
+      raise e unless version_code_already_used_error?(e)
+      retries += 1
+      raise e if retries > max_retries
+      new_code += 1
+      UI.important("Play rejected versionCode as used. Retrying with versionCode #{new_code} (versionName 1.0.#{new_code})")
+      retry
+    end
+  end
+
+  desc "Alias for beta lane (backward compatible)"
+  lane :android_beta do
+    beta
+  end
+end

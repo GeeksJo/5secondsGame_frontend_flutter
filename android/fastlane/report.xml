@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000151">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="1: google_play_track_version_codes" time="1.870277">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="2: google_play_track_version_codes" time="3.188621">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: cd /Users/mohammedadel/Work/FlutterProjects/5seconds_app/seconds_app &amp;&amp; flutter pub get" time="1.617548">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="4: cd /Users/mohammedadel/Work/FlutterProjects/5seconds_app/seconds_app &amp;&amp; flutter build appbundle --release" time="738.918131">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: upload_to_play_store" time="58.472582">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>
