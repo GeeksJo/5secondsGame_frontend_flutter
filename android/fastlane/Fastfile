@@ -70,7 +70,7 @@ platform :android do
 
   def build_android_aab!
     sh("cd #{flutter_project_root} && flutter pub get")
-    sh("cd #{flutter_project_root} && flutter build appbundle --release")
+    sh("cd #{flutter_project_root} && flutter build appbundle --release --no-tree-shake-icons")
   end
 
   def version_code_already_used_error?(e)
