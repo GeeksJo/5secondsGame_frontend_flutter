@@ -13,7 +13,11 @@ import 'services/storage_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env');
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {
+    // Ad unit IDs fall back to [AdMobUnitIds] in release builds.
+  }
 
   final storage = StorageService();
   await storage.init();

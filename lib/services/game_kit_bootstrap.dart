@@ -7,6 +7,7 @@ import 'package:game_kit/game_kit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../constants/admob_unit_ids.dart';
 import '../theme/app_theme.dart';
 import 'app_navigator.dart';
 import 'game_kit_products.dart';
@@ -32,10 +33,14 @@ Future<void> initializeGameKit(StorageService storage) async {
   final persistedLocale = Locale(storage.getLocale());
 
   String env(String key) => (dotenv.env[key] ?? '').trim();
-  String envProdUnit(String key, String debugFallback) {
+  String envProdUnit(
+    String key, {
+    required String releaseFallback,
+    required String debugFallback,
+  }) {
     final v = env(key);
     if (v.isNotEmpty) return v;
-    return kReleaseMode ? '' : debugFallback;
+    return kReleaseMode ? releaseFallback : debugFallback;
   }
 
   final rewardedAndroid = env('ADMOB_ANDROID_REWARDED_ID');
@@ -81,19 +86,23 @@ Future<void> initializeGameKit(StorageService storage) async {
         prodAdMobUnitIds: AdMobProdUnitIds(
           interstitialAndroid: envProdUnit(
             'ADMOB_ANDROID_INTERSTITIAL_ID',
-            AdMobGoogleSampleUnitIds.interstitialAndroid,
+            releaseFallback: AdMobUnitIds.interstitialAndroid,
+            debugFallback: AdMobGoogleSampleUnitIds.interstitialAndroid,
           ),
           interstitialIos: envProdUnit(
             'ADMOB_IOS_INTERSTITIAL_ID',
-            AdMobGoogleSampleUnitIds.interstitialIos,
+            releaseFallback: AdMobUnitIds.interstitialIos,
+            debugFallback: AdMobGoogleSampleUnitIds.interstitialIos,
           ),
           bannerAndroid: envProdUnit(
             'ADMOB_ANDROID_BANNER_ID',
-            AdMobGoogleSampleUnitIds.bannerAndroid,
+            releaseFallback: AdMobUnitIds.bannerAndroid,
+            debugFallback: AdMobGoogleSampleUnitIds.bannerAndroid,
           ),
           bannerIos: envProdUnit(
             'ADMOB_IOS_BANNER_ID',
-            AdMobGoogleSampleUnitIds.bannerIos,
+            releaseFallback: AdMobUnitIds.bannerIos,
+            debugFallback: AdMobGoogleSampleUnitIds.bannerIos,
           ),
           rewardedAndroid: rewardedAndroid,
           rewardedIos: rewardedIos,
