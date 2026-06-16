@@ -44,13 +44,9 @@ class _QuestionScreenState extends State<QuestionScreen>
   String? _flipQuestionText;
   late int _answerSeconds;
   bool _introComplete = false;
-  int? _introBeat;
   bool _countdownUrgencyActive = false;
 
   static const _urgencyWindowSeconds = 3;
-  static const _introBeats = 2;
-  static const _introTickGap = Duration(seconds: 1);
-  static const _afterLastIntroTick = Duration(milliseconds: 300);
   static const _turnFlipDuration = Duration(milliseconds: 680);
   static const _afterTurnFlipPause = Duration(milliseconds: 400);
 
@@ -89,16 +85,18 @@ class _QuestionScreenState extends State<QuestionScreen>
     final isFFA = context.read<GameProvider>().mode == GameMode.freeForAll;
     if (isFFA) {
       _introComplete = true;
-      _introBeat = null;
+    } else {
+      // StageStartScreen already ran 2→1 for 1v1; no second intro here.
+      _introComplete = true;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(GameKit.notifications.markPlayedToday());
       GameKitAdBridge.preloadInterstitial();
-      if (context.read<GameProvider>().mode == GameMode.freeForAll) {
+      if (isFFA) {
         unawaited(_ffaStartAnswerPhase());
       } else {
-        _startAnswerTimerAfterIntroTicks();
+        unawaited(_start1v1AnswerPhase(hideQuestionFirst: false));
       }
     });
   }
@@ -140,14 +138,6 @@ class _QuestionScreenState extends State<QuestionScreen>
     unawaited(GameKit.sounds.stopCountdownUrgency());
   }
 
-  void _introHaptic(int index) {
-    if (index == 0) {
-      GameKit.haptics.lightTap();
-    } else {
-      GameKit.haptics.milestoneSuccess();
-    }
-  }
-
   void _playGoSound() {
     GameKit.sounds.go();
   }
@@ -170,64 +160,27 @@ class _QuestionScreenState extends State<QuestionScreen>
     _playGoSound();
     if (!mounted || _answered) return;
     GameKit.haptics.milestoneSuccess();
+    setState(() => _introComplete = true);
     _timerController.forward(from: 0);
   }
 
-  Future<void> _startAnswerTimerAfterIntroTicks() async {
+  /// 1v1: flip handoff or first question after [StageStartScreen] — no 2→1 intro.
+  Future<void> _start1v1AnswerPhase({bool hideQuestionFirst = true}) async {
     if (!mounted || _answered) return;
     GameKitAdBridge.preloadInterstitial();
     _resetAnswerTimerForNewRound();
-    const introBeats = _introBeats;
-    setState(() {
-      _introComplete = false;
-      _introBeat = introBeats;
-    });
-    for (var i = 0; i < introBeats; i++) {
+    if (hideQuestionFirst) {
+      setState(() {
+        _introComplete = false;
+      });
+      await Future<void>.delayed(const Duration(milliseconds: 200));
       if (!mounted || _answered) return;
-      final beat = introBeats - i;
-      setState(() => _introBeat = beat);
-      GameKit.sounds.countdownTick();
-      _introHaptic(i);
-      if (i < introBeats - 1) {
-        await Future<void>.delayed(_introTickGap);
-      }
     }
-    if (!mounted || _answered) return;
-    await Future<void>.delayed(_afterLastIntroTick);
-    if (!mounted || _answered) return;
     _playGoSound();
     if (!mounted || _answered) return;
-    GameKit.haptics.invalidAction();
-    setState(() {
-      _introBeat = null;
-      _introComplete = true;
-    });
+    GameKit.haptics.milestoneSuccess();
+    setState(() => _introComplete = true);
     _timerController.forward(from: 0);
-  }
-
-  Widget _buildIntroCountdownDisplay(
-    double diameter,
-    int introTotalBeats, {
-    double? introRingStrokeWidth,
-  }) {
-    final beat = _introBeat!;
-    final progress = (introTotalBeats + 1 - beat) / introTotalBeats.toDouble();
-    return TweenAnimationBuilder<double>(
-      key: ValueKey<int>(beat),
-      tween: Tween(begin: 1.08, end: 1.0),
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      builder: (context, scale, child) {
-        return Transform.scale(scale: scale, child: child);
-      },
-      child: CountdownTimer(
-        progress: progress,
-        secondsLeft: beat,
-        isIntro: true,
-        diameter: diameter,
-        introRingStrokeWidth: introRingStrokeWidth,
-      ),
-    );
   }
 
   Widget _buildCrossPromoButton({
@@ -285,20 +238,21 @@ class _QuestionScreenState extends State<QuestionScreen>
   Widget _buildCountdownBlock(
     AppLocalizations l10n,
     bool isTablet,
-    int introTotalBeats,
-    double timerDiameter,
-  ) {
+    double timerDiameter, {
+    required bool is1v1,
+  }) {
     final d = timerDiameter;
-    final introStroke = isTablet ? 12.0 : null;
     final answerStroke = isTablet ? 14.0 : null;
+    final handoffWaiting = is1v1 && !_introComplete;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (!_introComplete && _introBeat != null)
-          _buildIntroCountdownDisplay(
-            d,
-            introTotalBeats,
-            introRingStrokeWidth: introStroke,
+        if (handoffWaiting)
+          CountdownTimer(
+            progress: 1,
+            secondsLeft: _answerSeconds,
+            diameter: d,
+            answerRingStrokeWidth: answerStroke,
           )
         else
           AnimatedBuilder(
@@ -313,20 +267,6 @@ class _QuestionScreenState extends State<QuestionScreen>
                 answerRingStrokeWidth: answerStroke,
               );
             },
-          ),
-        if (!_introComplete && _introBeat != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Text(
-              l10n.getReady,
-              style: TextStyle(
-                fontFamily: AppFonts.family,
-                color: AppColors.textMuted,
-                fontSize: isTablet ? 26 : 15,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
-            ),
           ),
       ],
     );
@@ -443,30 +383,54 @@ class _QuestionScreenState extends State<QuestionScreen>
     );
   }
 
-  Widget _buildQuestionPanel({required bool isTablet, required String text}) {
+  Widget _buildQuestionPanel({
+    required bool isTablet,
+    required String text,
+    required bool is1v1,
+    required AppLocalizations l10n,
+  }) {
     final fontSize = isTablet ? 38.0 : 22.0;
+    final showQuestion =
+        is1v1 ? (_introComplete && !_turnFlipping) : _introComplete;
+    if (!showQuestion) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: isTablet ? 28 : 20),
+        child: SizedBox(
+          height: fontSize * 1.35 * 2,
+          child: Center(
+            child: Text(
+              l10n.getReady,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppFonts.family,
+                color: AppColors.textMuted,
+                fontSize: isTablet ? 26 : 15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isTablet ? 28 : 20),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 280),
-        opacity: _introComplete ? 1 : 0.48,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          transitionBuilder: (child, anim) =>
-              FadeTransition(opacity: anim, child: child),
-          child: Text(
-            text,
-            key: ValueKey<String>(text),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: AppFonts.family,
-              color: AppColors.textPrimary,
-              fontSize: fontSize,
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        transitionBuilder: (child, anim) =>
+            FadeTransition(opacity: anim, child: child),
+        child: Text(
+          text,
+          key: ValueKey<String>(text),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: AppFonts.family,
+            color: AppColors.textPrimary,
+            fontSize: fontSize,
+            fontWeight: FontWeight.w700,
+            height: 1.35,
           ),
         ),
       ),
@@ -479,7 +443,6 @@ class _QuestionScreenState extends State<QuestionScreen>
     required GameProvider game,
     required bool isTablet,
     required bool is1v1,
-    required int introTotalBeats,
     required VoidCallback? onPause,
     required VoidCallback? onRemoveAds,
     required String headerName,
@@ -519,8 +482,8 @@ class _QuestionScreenState extends State<QuestionScreen>
                   child: _buildCountdownBlock(
                     l10n,
                     isTablet,
-                    introTotalBeats,
                     timerD,
+                    is1v1: is1v1,
                   ),
                 ),
               ),
@@ -529,7 +492,12 @@ class _QuestionScreenState extends State<QuestionScreen>
           ),
         ),
         SizedBox(height: isTablet ? 28 : 20),
-        _buildQuestionPanel(isTablet: isTablet, text: questionText),
+        _buildQuestionPanel(
+          isTablet: isTablet,
+          text: questionText,
+          is1v1: is1v1,
+          l10n: l10n,
+        ),
         const Spacer(flex: 3),
         RedButton(
           label: l10n.done,
@@ -907,11 +875,10 @@ class _QuestionScreenState extends State<QuestionScreen>
         _flipName = null;
         _flipQuestionText = null;
         _introComplete = false;
-        _introBeat = null;
       });
       _answered = false;
       _paused = false;
-      _startAnswerTimerAfterIntroTicks();
+      unawaited(_start1v1AnswerPhase());
     });
   }
 
@@ -945,7 +912,6 @@ class _QuestionScreenState extends State<QuestionScreen>
     final question = game.currentQuestion;
     final isTablet = ResponsiveLayout.isTablet(context);
     final is1v1 = game.mode == GameMode.oneVsOne;
-    const introTotalBeats = _introBeats;
 
     final headerName = _turnFlipping
         ? (_flipName ?? '')
@@ -960,7 +926,6 @@ class _QuestionScreenState extends State<QuestionScreen>
       game: game,
       isTablet: isTablet,
       is1v1: is1v1,
-      introTotalBeats: introTotalBeats,
       onPause: _turnFlipping || !_introComplete ? null : _showPauseMenu,
       onRemoveAds: _turnFlipping || !_introComplete || _answered || _paused
           ? null
@@ -1033,7 +998,6 @@ class _QuestionScreenState extends State<QuestionScreen>
     final question = game.currentQuestion;
     final isTablet = ResponsiveLayout.isTablet(context);
     final is1v1 = game.mode == GameMode.oneVsOne;
-    const introTotalBeats = _introBeats;
 
     return _buildMainQuestionColumn(
       context: context,
@@ -1041,7 +1005,6 @@ class _QuestionScreenState extends State<QuestionScreen>
       game: game,
       isTablet: isTablet,
       is1v1: is1v1,
-      introTotalBeats: introTotalBeats,
       onPause: null,
       onRemoveAds: null,
       headerName: game.currentPlayer.name,

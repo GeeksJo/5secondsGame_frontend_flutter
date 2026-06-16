@@ -14,7 +14,7 @@ import 'home_screen.dart';
 import 'question_screen.dart';
 
 /// Full-screen countdown after categories + Start (same layout for 1v1 and FFA;
-/// FFA uses 3s / 3–2–1, 1v1 uses 2s / 2–1; tick audio only in 1v1).
+/// FFA uses 3s / 3–2–1, 1v1 uses 2s / 2–1).
 /// Mid-game FFA: [PassScreen] → [QuestionScreen] directly.
 class StageStartScreen extends StatefulWidget {
   const StageStartScreen({super.key});
@@ -50,7 +50,7 @@ class _StageStartScreenState extends State<StageStartScreen>
       if (!mounted) return;
       GameKitAdBridge.preloadInterstitial();
       GameKit.haptics.lightTap();
-      _playTickIfSound();
+      _playCountdownTick();
       _controller.forward();
     });
   }
@@ -68,12 +68,11 @@ class _StageStartScreenState extends State<StageStartScreen>
     if (n != _displayNumber) {
       setState(() => _displayNumber = n);
       GameKit.haptics.lightTap();
-      _playTickIfSound();
+      _playCountdownTick();
     }
   }
 
-  void _playTickIfSound() {
-    if (_ffa) return;
+  void _playCountdownTick() {
     GameKit.sounds.countdownTick();
   }
 

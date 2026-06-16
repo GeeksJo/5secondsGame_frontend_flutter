@@ -18,6 +18,8 @@ class PlayerSetupScreen extends StatefulWidget {
 }
 
 class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
+  static const int minFreeForAllPlayers = 3;
+
   final List<TextEditingController> _controllers = [];
 
   @override
@@ -28,6 +30,12 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
     if (seedNames != null && seedNames.isNotEmpty) {
       for (final name in seedNames) {
         _controllers.add(TextEditingController(text: name));
+      }
+      if (game.mode == GameMode.freeForAll &&
+          _controllers.length < minFreeForAllPlayers) {
+        for (var i = _controllers.length; i < minFreeForAllPlayers; i++) {
+          _controllers.add(TextEditingController());
+        }
       }
     } else {
       final count = game.mode == GameMode.oneVsOne ? 2 : 3;
@@ -46,9 +54,6 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
     if (game.sessionFreeForAllNames.isNotEmpty) {
       return game.sessionFreeForAllNames;
     }
-    if (game.players.isNotEmpty) {
-      return game.players.map((player) => player.name).toList();
-    }
     return null;
   }
 
@@ -60,9 +65,13 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
     super.dispose();
   }
 
-  bool get _canProceed =>
-      _controllers.length >= 2 &&
-      _controllers.every((c) => c.text.trim().isNotEmpty);
+  bool get _canProceed {
+    final mode = context.read<GameProvider>().mode;
+    final minPlayers =
+        mode == GameMode.freeForAll ? minFreeForAllPlayers : 2;
+    return _controllers.length >= minPlayers &&
+        _controllers.every((c) => c.text.trim().isNotEmpty);
+  }
 
   void _addPlayer() {
     setState(() {
@@ -71,7 +80,10 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
   }
 
   void _removePlayer(int index) {
-    if (_controllers.length <= 2) return;
+    final minPlayers = context.read<GameProvider>().mode == GameMode.freeForAll
+        ? minFreeForAllPlayers
+        : 2;
+    if (_controllers.length <= minPlayers) return;
     setState(() {
       _controllers[index].dispose();
       _controllers.removeAt(index);
@@ -109,7 +121,7 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
             style: TextStyle(color: AppColors.textPrimary, fontSize: nameSize),
           ),
         ),
-        if (isFFA && _controllers.length > 2)
+        if (isFFA && _controllers.length > minFreeForAllPlayers)
           IconButton(
             icon: Icon(
               Icons.remove_circle_outline,
