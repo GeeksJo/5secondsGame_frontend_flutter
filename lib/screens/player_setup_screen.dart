@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/game_state.dart';
 import '../providers/game_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_bottom_banner_slot.dart';
 import '../widgets/responsive_layout.dart';
 import 'category_selection_screen.dart';
 
@@ -219,6 +220,7 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
                     ),
                   ),
                 ),
+                const AppBottomBannerSlot(),
               ],
             ),
           ),

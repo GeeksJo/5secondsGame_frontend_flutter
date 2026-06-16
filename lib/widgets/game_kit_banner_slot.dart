@@ -20,18 +20,25 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
   BannerAd? _ad;
   int _loadGeneration = 0;
   bool _loading = false;
+  int _loadedForWidth = 0;
 
   @override
   void initState() {
     super.initState();
     GameKitAdBridge.interstitialPresenting.addListener(_onInterstitialChange);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeLoad());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maybeLoad();
   }
 
   @override
   void dispose() {
     GameKitAdBridge.interstitialPresenting.removeListener(_onInterstitialChange);
-    _disposeAd(immediate: true);
+    _disposeAd(immediate: true, rebuild: false);
     super.dispose();
   }
 
@@ -44,17 +51,18 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _load();
+        _maybeLoad();
       });
     });
   }
 
-  void _disposeAd({bool immediate = false}) {
+  void _disposeAd({bool immediate = false, bool rebuild = true}) {
     final ad = _ad;
     if (ad == null) return;
     _ad = null;
+    _loadedForWidth = 0;
     _loadGeneration++;
-    if (mounted) setState(() {});
+    if (rebuild && mounted) setState(() {});
 
     void disposeNative() => ad.dispose();
     if (immediate) {
@@ -65,7 +73,24 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
     }
   }
 
-  Future<void> _load() async {
+  Future<void> _maybeLoad() async {
+    if (!AdsFlag.enabled) return;
+    if (!mounted) return;
+    if (GameKitAdBridge.interstitialPresenting.value) return;
+
+    final width = MediaQuery.sizeOf(context).width.truncate();
+    if (width <= 0) return;
+    if (_loading) return;
+    if (_ad != null && _loadedForWidth == width) return;
+
+    if (_ad != null && _loadedForWidth != width) {
+      _disposeAd();
+    }
+
+    await _load(width: width);
+  }
+
+  Future<void> _load({required int width}) async {
     if (!AdsFlag.enabled) return;
     if (!mounted) return;
     if (GameKitAdBridge.interstitialPresenting.value) return;
@@ -74,7 +99,6 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
     _loading = true;
     final generation = ++_loadGeneration;
     try {
-      final width = MediaQuery.sizeOf(context).width.truncate();
       final size =
           await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(width);
       if (!mounted || size == null || generation != _loadGeneration) return;
@@ -90,7 +114,10 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
         return;
       }
 
-      setState(() => _ad = ad);
+      setState(() {
+        _ad = ad;
+        _loadedForWidth = width;
+      });
     } finally {
       if (generation == _loadGeneration) _loading = false;
     }

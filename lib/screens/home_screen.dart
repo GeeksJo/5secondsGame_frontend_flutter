@@ -8,6 +8,7 @@ import '../models/game_state.dart';
 import '../providers/locale_provider.dart';
 import '../providers/game_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_bottom_banner_slot.dart';
 import '../widgets/app_cross_promo.dart';
 import '../widgets/responsive_layout.dart';
 import 'category_selection_screen.dart';
@@ -54,60 +55,66 @@ class HomeScreen extends StatelessWidget {
         decoration: AppDecorations.gradientBg,
         child: SafeArea(
           bottom: false,
-          top: false,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: outerHorizontal),
-            child: ResponsiveLayout(
-              maxWidth: maxW,
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: -120,
-                    right: -120,
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.06),
-                      ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: outerHorizontal),
+                  child: ResponsiveLayout(
+                    maxWidth: maxW,
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: -120,
+                          right: -120,
+                          child: Container(
+                            width: 260,
+                            height: 260,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.06),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: -140,
+                          left: -120,
+                          child: Container(
+                            width: 320,
+                            height: 320,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withValues(alpha: 0.10),
+                            ),
+                          ),
+                        ),
+                        if (split)
+                          _HomeLandscapeBody(
+                            l10n: l10n,
+                            isArabic: isArabic,
+                            isTablet: isTablet,
+                            titleSize: titleSize,
+                            gifSize: gifSize,
+                            modeButtonGap: modeButtonGap,
+                            isRtl: isRtl,
+                          )
+                        else
+                          _HomePortraitScrollBody(
+                            l10n: l10n,
+                            isArabic: isArabic,
+                            isTablet: isTablet,
+                            titleSize: titleSize,
+                            gifSize: gifSize,
+                            modeButtonGap: modeButtonGap,
+                            isRtl: isRtl,
+                          ),
+                      ],
                     ),
                   ),
-                  Positioned(
-                    bottom: -140,
-                    left: -120,
-                    child: Container(
-                      width: 320,
-                      height: 320,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withValues(alpha: 0.10),
-                      ),
-                    ),
-                  ),
-                  if (split)
-                    _HomeLandscapeBody(
-                      l10n: l10n,
-                      isArabic: isArabic,
-                      isTablet: isTablet,
-                      titleSize: titleSize,
-                      gifSize: gifSize,
-                      modeButtonGap: modeButtonGap,
-                      isRtl: isRtl,
-                    )
-                  else
-                    _HomePortraitScrollBody(
-                      l10n: l10n,
-                      isArabic: isArabic,
-                      isTablet: isTablet,
-                      titleSize: titleSize,
-                      gifSize: gifSize,
-                      modeButtonGap: modeButtonGap,
-                      isRtl: isRtl,
-                    ),
-                ],
+                ),
               ),
-            ),
+              const AppBottomBannerSlot(),
+            ],
           ),
         ),
       ),

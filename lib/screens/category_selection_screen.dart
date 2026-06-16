@@ -8,6 +8,7 @@ import '../providers/game_provider.dart';
 import '../providers/game_settings_provider.dart';
 import '../providers/locale_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_bottom_banner_slot.dart';
 import '../widgets/category_card.dart';
 import '../widgets/locked_category_sheet.dart';
 import '../widgets/responsive_layout.dart';
@@ -346,7 +347,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                       isTablet ? 24 : 20,
                       isTablet ? 8 : 6,
                       isTablet ? 24 : 20,
-                      MediaQuery.paddingOf(context).bottom,
+                      0,
                     ),
                     child: SizedBox(
                       width: double.infinity,
@@ -373,6 +374,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                       ),
                     ),
                   ),
+                  const AppBottomBannerSlot(),
                 ],
               ),
             ),

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:game_kit/game_kit.dart' hide GameKitBannerSlot;
+import 'package:game_kit/game_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:yalla/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -13,11 +13,10 @@ import '../providers/locale_provider.dart';
 import '../services/game_kit_bootstrap.dart';
 import '../services/storage_service.dart';
 import '../services/game_kit_products.dart';
-import '../services/ads_flag.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_timer.dart';
+import '../widgets/app_bottom_banner_slot.dart';
 import '../widgets/app_cross_promo.dart';
-import '../widgets/game_kit_banner_slot.dart';
 import '../widgets/red_button.dart';
 import '../widgets/responsive_layout.dart';
 import 'home_screen.dart';
@@ -460,24 +459,6 @@ class _QuestionScreenState extends State<QuestionScreen>
     );
   }
 
-  Widget _buildBannerSlot() {
-    if (!AdsFlag.enabled) return const SizedBox.shrink();
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 10),
-        ValueListenableBuilder<bool>(
-          valueListenable: GameKit.ads.bannersEnabled,
-          builder: (context, enabled, _) {
-            if (!enabled) return const SizedBox.shrink();
-            return const GameKitBannerSlot();
-          },
-        ),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
-
   Widget _buildMainQuestionColumn({
     required BuildContext context,
     required AppLocalizations l10n,
@@ -543,7 +524,7 @@ class _QuestionScreenState extends State<QuestionScreen>
           diameter: redD,
         ),
         const Spacer(flex: 1),
-        _buildBannerSlot(),
+        const AppBottomBannerSlot(),
       ],
     );
   }
