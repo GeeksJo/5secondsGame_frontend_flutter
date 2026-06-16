@@ -103,7 +103,6 @@ class SettingsScreen extends StatelessWidget {
                 const GameKitSettingsBody(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
                   sectionSpacing: _sectionSpacing,
                 ),
                 // if (kDebugMode) ...[
