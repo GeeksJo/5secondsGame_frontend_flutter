@@ -144,9 +144,9 @@ class _HomePortraitScrollBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hPad = isTablet ? 12.0 : 20.0;
-    final afterSettings = isTablet ? 0.0 : 28.0;
-    final afterGif = isTablet ? 2.0 : 22.0;
-    final afterModeLabel = isTablet ? 2.0 : 10.0;
+    final afterSettings = isTablet ? 0.0 : 20.0;
+    final afterGif = isTablet ? 2.0 : 5.0;
+    final afterModeLabel = isTablet ? 2.0 : 5.0;
     final beforeFooter = isTablet ? 16.0 : 14.0;
     final settingsV = isTablet ? 10.0 : 8.0;
     return SingleChildScrollView(

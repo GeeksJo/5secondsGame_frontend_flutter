@@ -6,8 +6,8 @@ import 'game_kit_banner_slot.dart';
 
 /// Shared bottom banner slot for menu, setup, and gameplay screens.
 ///
-/// Gates on [AdsFlag.enabled] and [GameKit.ads.bannersEnabled], applies
-/// consistent spacing, and clears the home-indicator safe area.
+/// Gates on [AdsFlag.enabled] and [GameKit.ads.bannersEnabled] and applies
+/// consistent spacing above the banner.
 class AppBottomBannerSlot extends StatelessWidget {
   const AppBottomBannerSlot({super.key});
 
@@ -20,17 +20,13 @@ class AppBottomBannerSlot extends StatelessWidget {
       builder: (context, enabled, _) {
         if (!enabled) return const SizedBox.shrink();
 
-        return SafeArea(
-          top: false,
-          minimum: EdgeInsets.zero,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10),
-              const Center(child: GameKitBannerSlot()),
-              const SizedBox(height: 8),
-            ],
-          ),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            const Center(child: GameKitBannerSlot()),
+            const SizedBox(height: 8),
+          ],
         );
       },
     );
