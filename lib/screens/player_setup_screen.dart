@@ -23,18 +23,33 @@ class _PlayerSetupScreenState extends State<PlayerSetupScreen> {
   @override
   void initState() {
     super.initState();
-    final initialNames = widget.initialNames;
-    if (initialNames != null && initialNames.isNotEmpty) {
-      for (final name in initialNames) {
+    final game = context.read<GameProvider>();
+    final seedNames = _seedNames(game);
+    if (seedNames != null && seedNames.isNotEmpty) {
+      for (final name in seedNames) {
         _controllers.add(TextEditingController(text: name));
       }
     } else {
-      final mode = context.read<GameProvider>().mode;
-      final count = mode == GameMode.oneVsOne ? 2 : 3;
+      final count = game.mode == GameMode.oneVsOne ? 2 : 3;
       for (var i = 0; i < count; i++) {
         _controllers.add(TextEditingController());
       }
     }
+  }
+
+  /// Session names from a prior free-for-all run (not persisted to disk).
+  List<String>? _seedNames(GameProvider game) {
+    if (widget.initialNames != null && widget.initialNames!.isNotEmpty) {
+      return widget.initialNames;
+    }
+    if (game.mode != GameMode.freeForAll) return null;
+    if (game.sessionFreeForAllNames.isNotEmpty) {
+      return game.sessionFreeForAllNames;
+    }
+    if (game.players.isNotEmpty) {
+      return game.players.map((player) => player.name).toList();
+    }
+    return null;
   }
 
   @override

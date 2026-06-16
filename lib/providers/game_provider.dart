@@ -7,6 +7,7 @@ import '../data/questions.dart';
 class GameProvider extends ChangeNotifier {
   GameMode _mode = GameMode.oneVsOne;
   List<Player> _players = [];
+  List<String> _sessionFreeForAllNames = [];
   List<String> _selectedCategories = [];
   int _totalRounds = 3;
   int _currentRound = 1;
@@ -20,6 +21,8 @@ class GameProvider extends ChangeNotifier {
 
   GameMode get mode => _mode;
   List<Player> get players => _players;
+  List<String> get sessionFreeForAllNames =>
+      List.unmodifiable(_sessionFreeForAllNames);
   List<String> get selectedCategories => _selectedCategories;
   int get totalRounds => _totalRounds;
   int get currentRound => _currentRound;
@@ -37,6 +40,9 @@ class GameProvider extends ChangeNotifier {
 
   void setPlayers(List<String> names) {
     _players = names.map((n) => Player(name: n)).toList();
+    if (_mode == GameMode.freeForAll && names.isNotEmpty) {
+      _sessionFreeForAllNames = List<String>.from(names);
+    }
     notifyListeners();
   }
 
