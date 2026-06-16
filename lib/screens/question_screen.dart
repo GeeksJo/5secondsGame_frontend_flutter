@@ -48,8 +48,9 @@ class _QuestionScreenState extends State<QuestionScreen>
   bool _countdownUrgencyActive = false;
 
   static const _urgencyWindowSeconds = 3;
-  static const _introTickGap = Duration(milliseconds: 420);
-  static const _afterLastIntroTick = Duration(milliseconds: 160);
+  static const _introBeats = 2;
+  static const _introTickGap = Duration(seconds: 1);
+  static const _afterLastIntroTick = Duration(milliseconds: 300);
   static const _turnFlipDuration = Duration(milliseconds: 680);
   static const _afterTurnFlipPause = Duration(milliseconds: 400);
 
@@ -151,9 +152,21 @@ class _QuestionScreenState extends State<QuestionScreen>
     GameKit.sounds.go();
   }
 
+  void _resetAnswerTimerForNewRound() {
+    _answerSeconds = context.read<GameSettingsProvider>().questionTimerSeconds;
+    _timerController
+      ..stop()
+      ..reset();
+    if (_timerController.duration != Duration(seconds: _answerSeconds)) {
+      _timerController.duration = Duration(seconds: _answerSeconds);
+    }
+    _stopCountdownUrgency();
+  }
+
   Future<void> _ffaStartAnswerPhase() async {
     if (!mounted || _answered) return;
     GameKitAdBridge.preloadInterstitial();
+    _resetAnswerTimerForNewRound();
     _playGoSound();
     if (!mounted || _answered) return;
     GameKit.haptics.milestoneSuccess();
@@ -163,7 +176,8 @@ class _QuestionScreenState extends State<QuestionScreen>
   Future<void> _startAnswerTimerAfterIntroTicks() async {
     if (!mounted || _answered) return;
     GameKitAdBridge.preloadInterstitial();
-    const introBeats = 2;
+    _resetAnswerTimerForNewRound();
+    const introBeats = _introBeats;
     setState(() {
       _introComplete = false;
       _introBeat = introBeats;
@@ -722,10 +736,12 @@ class _QuestionScreenState extends State<QuestionScreen>
                       child: OutlinedButton(
                         onPressed: () async {
                           Navigator.pop(dialogContext);
-                          await GameKitAdBridge.presentOnAbandonHome();
+                          final nav = Navigator.of(context);
+                          try {
+                            await GameKitAdBridge.presentOnAbandonHome();
+                          } catch (_) {}
                           if (!mounted) return;
-                          Navigator.pushAndRemoveUntil(
-                            context,
+                          nav.pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder: (_) => const HomeScreen(),
                             ),
@@ -890,6 +906,8 @@ class _QuestionScreenState extends State<QuestionScreen>
         _turnFlipping = false;
         _flipName = null;
         _flipQuestionText = null;
+        _introComplete = false;
+        _introBeat = null;
       });
       _answered = false;
       _paused = false;
@@ -927,7 +945,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     final question = game.currentQuestion;
     final isTablet = ResponsiveLayout.isTablet(context);
     final is1v1 = game.mode == GameMode.oneVsOne;
-    const introTotalBeats = 2;
+    const introTotalBeats = _introBeats;
 
     final headerName = _turnFlipping
         ? (_flipName ?? '')
@@ -1015,7 +1033,7 @@ class _QuestionScreenState extends State<QuestionScreen>
     final question = game.currentQuestion;
     final isTablet = ResponsiveLayout.isTablet(context);
     final is1v1 = game.mode == GameMode.oneVsOne;
-    const introTotalBeats = 2;
+    const introTotalBeats = _introBeats;
 
     return _buildMainQuestionColumn(
       context: context,

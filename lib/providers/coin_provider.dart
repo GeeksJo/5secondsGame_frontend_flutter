@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import '../services/storage_service.dart';
-import '../services/ads_flag.dart';
 
 class CoinProvider extends ChangeNotifier {
   final StorageService _storage;
@@ -12,6 +13,9 @@ class CoinProvider extends ChangeNotifier {
   static const int buyCost = 100;
   static const int adReward = 20;
   static const Duration rentDuration = Duration(hours: 2);
+
+  static const Duration _rewardedLoadCap = Duration(seconds: 5);
+  static const Duration _rewardedShowCap = Duration(seconds: 30);
 
   CoinProvider(this._storage) {
     _coins = _storage.getCoins();
@@ -53,14 +57,36 @@ class CoinProvider extends ChangeNotifier {
   }
 
   Future<bool> watchAdForCoins() async {
-    if (!AdsFlag.enabled) return false;
-    await GameKit.ads.loadRewarded();
-    final rewarded = await GameKit.ads.showRewarded();
-    if (rewarded) {
-      await addCoins(adReward);
+    if (!GameKit.ads.canShowRewarded(RewardedReason.hint)) {
+      return false;
     }
-    return rewarded;
+
+    if (!GameKit.ads.isRewardedReady) {
+      try {
+        await GameKit.ads
+            .loadRewarded()
+            .timeout(_rewardedLoadCap, onTimeout: () {});
+      } catch (_) {}
+    }
+
+    if (!GameKit.ads.isRewardedReady) {
+      return false;
+    }
+
+    try {
+      final rewarded = await GameKit.ads
+          .showRewarded()
+          .timeout(_rewardedShowCap, onTimeout: () => false);
+      if (rewarded) {
+        await addCoins(adReward);
+      }
+      return rewarded;
+    } catch (_) {
+      return false;
+    }
   }
 
-  bool get isAdReady => AdsFlag.enabled && GameKit.ads.isRewardedReady;
+  bool get isAdReady =>
+      GameKit.ads.canShowRewarded(RewardedReason.hint) &&
+      GameKit.ads.isRewardedReady;
 }

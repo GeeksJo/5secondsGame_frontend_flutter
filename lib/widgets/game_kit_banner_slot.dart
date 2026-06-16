@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:game_kit/game_kit.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import '../services/ads_flag.dart';
 import '../services/game_kit_bootstrap.dart';
 
 /// Loads an anchored adaptive banner via [GameKit.ads].
@@ -37,7 +36,9 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
 
   @override
   void dispose() {
-    GameKitAdBridge.interstitialPresenting.removeListener(_onInterstitialChange);
+    GameKitAdBridge.interstitialPresenting.removeListener(
+      _onInterstitialChange,
+    );
     _disposeAd(immediate: true, rebuild: false);
     super.dispose();
   }
@@ -74,7 +75,6 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
   }
 
   Future<void> _maybeLoad() async {
-    if (!AdsFlag.enabled) return;
     if (!mounted) return;
     if (GameKitAdBridge.interstitialPresenting.value) return;
 
@@ -91,7 +91,6 @@ class _GameKitBannerSlotState extends State<GameKitBannerSlot> {
   }
 
   Future<void> _load({required int width}) async {
-    if (!AdsFlag.enabled) return;
     if (!mounted) return;
     if (GameKitAdBridge.interstitialPresenting.value) return;
     if (_loading || _ad != null) return;

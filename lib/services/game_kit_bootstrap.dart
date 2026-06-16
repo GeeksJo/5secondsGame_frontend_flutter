@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:game_kit/game_kit.dart';
@@ -7,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/app_theme.dart';
-import 'ads_flag.dart';
 import 'app_navigator.dart';
 import 'game_kit_products.dart';
 import 'storage_service.dart';
@@ -32,14 +32,17 @@ Future<void> initializeGameKit(StorageService storage) async {
   final persistedLocale = Locale(storage.getLocale());
 
   String env(String key) => (dotenv.env[key] ?? '').trim();
-  String envOr(String key, String fallback) {
+  String envProdUnit(String key, String debugFallback) {
     final v = env(key);
-    return v.isEmpty ? fallback : v;
+    if (v.isNotEmpty) return v;
+    return kReleaseMode ? '' : debugFallback;
   }
 
-  // By default, ads are disabled in release builds.
-  // This is intentionally a compile-time flag to keep it deterministic per build.
-  final adsEnabled = AdsFlag.enabled;
+  final rewardedAndroid = env('ADMOB_ANDROID_REWARDED_ID');
+  final rewardedIos = env('ADMOB_IOS_REWARDED_ID');
+  final rewardedAdsEnabled =
+      rewardedAndroid.isNotEmpty && rewardedIos.isNotEmpty;
+
   await GameKit.initialize(
     GameKitConfig(
       locale: persistedLocale,
@@ -73,36 +76,31 @@ Future<void> initializeGameKit(StorageService storage) async {
         },
       ),
       ads: AdsConfig(
-        interstitialEveryNLevels: 1,
-        adMobEnvironment: AdMobUnitEnvironment.test,
+        interstitialEveryNLevels: 2,
+        adMobEnvironment: AdMobUnitEnvironment.prod,
         prodAdMobUnitIds: AdMobProdUnitIds(
-          interstitialAndroid: envOr(
+          interstitialAndroid: envProdUnit(
             'ADMOB_ANDROID_INTERSTITIAL_ID',
             AdMobGoogleSampleUnitIds.interstitialAndroid,
           ),
-          interstitialIos: envOr(
+          interstitialIos: envProdUnit(
             'ADMOB_IOS_INTERSTITIAL_ID',
             AdMobGoogleSampleUnitIds.interstitialIos,
           ),
-          bannerAndroid: envOr(
+          bannerAndroid: envProdUnit(
             'ADMOB_ANDROID_BANNER_ID',
             AdMobGoogleSampleUnitIds.bannerAndroid,
           ),
-          bannerIos: envOr(
+          bannerIos: envProdUnit(
             'ADMOB_IOS_BANNER_ID',
             AdMobGoogleSampleUnitIds.bannerIos,
           ),
-          rewardedAndroid: envOr(
-            'ADMOB_ANDROID_REWARDED_ID',
-            AdMobGoogleSampleUnitIds.rewardedAndroid,
-          ),
-          rewardedIos: envOr(
-            'ADMOB_IOS_REWARDED_ID',
-            AdMobGoogleSampleUnitIds.rewardedIos,
-          ),
+          rewardedAndroid: rewardedAndroid,
+          rewardedIos: rewardedIos,
         ),
         interstitialMaxPerSession: 8,
-        interstitialCooldownSeconds: 60,
+        interstitialCooldownSeconds: 40,
+        rewardedAdsEnabled: rewardedAdsEnabled,
       ),
       // [minLevel] is compared to a *cumulative* success count (see
       // [StorageService.incrementRatingSuccessCount]), not in-game round index.
@@ -133,16 +131,16 @@ Future<void> initializeGameKit(StorageService storage) async {
 
   await _migrateAudioHapticsPreferences(storage);
 
-  if (adsEnabled) {
-    await GameKit.ads.loadInterstitial();
+  await GameKit.ads.initializeMobileAds();
+  unawaited(GameKit.ads.loadInterstitial());
+  if (rewardedAdsEnabled) {
     unawaited(GameKit.ads.loadRewarded());
   }
 
   await _migrateLegacyDonationTotal(storage);
   await _prefetchIapCatalog();
-  if (adsEnabled) {
-    GameKitAdBridge.attach();
-  }
+  GameKitAdBridge.attach();
+
   _listenRatingPrompts();
   _listenRemoveAdsTooltip();
 }
@@ -315,6 +313,9 @@ Future<void> _showRatingFeedbackDialog(BuildContext context) {
 final class GameKitAdBridge {
   GameKitAdBridge._();
 
+  static const Duration _briefLoadWait = Duration(seconds: 2);
+  static const Duration _showCap = Duration(seconds: 60);
+
   /// True while a fullscreen interstitial is loading/showing.
   /// Banner slots listen to this to avoid iOS platform-view id collisions.
   static final ValueNotifier<bool> interstitialPresenting = ValueNotifier(
@@ -327,28 +328,34 @@ final class GameKitAdBridge {
 
   /// Fire-and-forget interstitial preload (no-op when ads are off or removed).
   static void preloadInterstitial() {
-    if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
     unawaited(GameKit.ads.loadInterstitial());
   }
 
-  static Future<bool> _loadAndShowInterstitial({
-    Duration loadTimeout = const Duration(seconds: 4),
-  }) async {
-    try {
-      await GameKit.ads.loadInterstitial().timeout(
-        loadTimeout,
-        onTimeout: () {},
-      );
-    } catch (_) {}
-    return GameKit.ads.showInterstitial();
-  }
+  /// Best-effort interstitial: brief preload wait, show only if ready, always
+  /// completes quickly when ads fail so gameplay/navigation never stalls.
+  static Future<bool> presentBestEffort() async {
+    if (GameKit.iap.adsRemoved.value) return false;
 
-  static Future<void> _present() async {
-    if (!AdsFlag.enabled) return;
     interstitialPresenting.value = true;
     try {
-      await _loadAndShowInterstitial();
+      if (!GameKit.ads.isInterstitialReady) {
+        try {
+          await GameKit.ads.loadInterstitial().timeout(
+            _briefLoadWait,
+            onTimeout: () {},
+          );
+        } catch (_) {}
+      }
+
+      if (!GameKit.ads.isInterstitialReady) {
+        return false;
+      }
+
+      return await GameKit.ads.showInterstitialIfReady().timeout(
+        _showCap,
+        onTimeout: () => false,
+      );
     } finally {
       interstitialPresenting.value = false;
       await GameKit.ads.adClosed();
@@ -357,7 +364,6 @@ final class GameKitAdBridge {
   }
 
   static Future<void> presentAfterLevel({required bool failed}) async {
-    if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
 
     var shouldShow = false;
@@ -371,20 +377,12 @@ final class GameKitAdBridge {
     }
 
     if (!shouldShow) return;
-    await _present();
+    await presentBestEffort();
   }
 
   static Future<void> presentOnAbandonHome() async {
-    if (!AdsFlag.enabled) return;
     if (GameKit.iap.adsRemoved.value) return;
-    interstitialPresenting.value = true;
-    try {
-      await _loadAndShowInterstitial();
-    } finally {
-      interstitialPresenting.value = false;
-      await GameKit.ads.adClosed();
-      preloadInterstitial();
-    }
+    await presentBestEffort();
   }
 
   static Future<void> detach() async {}
